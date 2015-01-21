@@ -21,6 +21,8 @@
 #define ESSENTIA_CHORDSDETECTION_H
 
 #include "algorithmfactory.h"
+#include <list>
+#include <iostream>
 
 namespace essentia {
 namespace standard {
@@ -29,11 +31,14 @@ class ChordsDetection : public Algorithm {
 
   protected:
     Input<std::vector<std::vector<Real> > > _pcp;
+    Input<std::vector<Real> > _ticks;
     Output<std::vector<std::string> > _chords;
     Output<std::vector<Real> > _strength;
 
     Algorithm* _chordsAlgo;
     int _numFramesWindow;
+    Real _sampleRate; 
+    int _hopSize;
 
  public:
   ChordsDetection() {
@@ -42,6 +47,7 @@ class ChordsDetection : public Algorithm {
     _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", false);
 
     declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
+    declareInput(_ticks, "ticks", "the ticks where is located the beat of the song");
     declareOutput(_chords, "chords", "the resulting chords, from A to G");
     declareOutput(_strength, "strength", "the strength of the chord");
   }
@@ -76,13 +82,14 @@ class ChordsDetection : public Algorithm {
 namespace essentia {
 namespace streaming {
 
-/**
- * @todo make this algo smarter, and make it output chords as soon as they
- *       can be computed, not only at the end...
- */
+// TODO: the implementation of the streaming mode is from the old algorithm 
+// and it was not changed. Implement the streaming mode for the new chords
+// detection algorithm.
+
 class ChordsDetection : public AlgorithmComposite {
  protected:
   SinkProxy<std::vector<Real> > _pcp;
+  //SinkProxy<std::vector<Real> > _ticks; //correct? useless for the moment 
 
   Source<std::string> _chords;
   Source<Real> _strength;
@@ -91,6 +98,7 @@ class ChordsDetection : public AlgorithmComposite {
   Algorithm* _poolStorage;
   standard::Algorithm* _chordsAlgo;
   int _numFramesWindow;
+  
 
  public:
   ChordsDetection();

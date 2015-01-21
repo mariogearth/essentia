@@ -43,53 +43,85 @@ const char* ChordsDetection::description = DOC("Using pitch profile classes, thi
 
 void ChordsDetection::configure() {
   Real wsize = parameter("windowSize").toReal();
-  Real sampleRate = parameter("sampleRate").toReal();
-  int hopSize = parameter("hopSize").toInt();
+  _sampleRate = parameter("sampleRate").toReal();
+  _hopSize = parameter("hopSize").toInt();
 
   // NB: this assumes that frameSize = hopSize * 2, so that we don't have to
   //     require frameSize as well as parameter.
-  _numFramesWindow = int((wsize * sampleRate) / hopSize) - 1;
+  _numFramesWindow = int((wsize * _sampleRate) / _hopSize) - 1; // wsize = 1.0 , hopSize = 512 --> 85
 }
 
 void ChordsDetection::compute() {
   const vector<vector<Real> >& hpcp = _pcp.get();
-  vector<string>& chords= _chords.get();
-  vector<Real>& strength= _strength.get();
+  vector<string>& chords = _chords.get();
+  vector<Real>& strength = _strength.get();
+  const vector<Real>& ticks = _ticks.get(); 
+  //TO-DO: putting a zero in first value of ticks
+  //ticks.push_front(0.0f);
 
   string key;
   string scale;
   Real firstToSecondRelativeStrength;
   Real str; // strength
 
-  chords.reserve(int(hpcp.size()/_numFramesWindow));
+  chords.reserve(int(hpcp.size()/_numFramesWindow)); // 1478/85 = 17
+  //out << "chords.reserve(int(hpcp.size()/_numFramesWindow)); = " << int(hpcp.size()/_numFramesWindow) << endl;
   strength.reserve(int(hpcp.size()/_numFramesWindow));
 
-  for (int i=0; i<int(hpcp.size()); ++i) {
+  //cout << "int(hpcp.size() = " << (int)hpcp.size() << endl; 
 
-    int indexStart = max(0, i - _numFramesWindow/2);
-    int indexEnd = min(i + _numFramesWindow/2, (int)hpcp.size());
+  // for (int j=0; j<ticks.size(); j++) {
+  //   cout << "tick " << j << " " << ticks[j] << endl;
+  // } 
+   
+  Real diffTicks = ticks[1] - ticks[0];
+    int numFramesTick = int((diffTicks * _sampleRate) / _hopSize) - 1;
+    int initFrame = int((ticks[0] * _sampleRate) / _hopSize) - 1;
 
-    vector<Real> hpcpAverage = meanFrames(hpcp, indexStart, indexEnd);
-    normalize(hpcpAverage);
+    int tickIndex=2;
+    int i=initFrame;
+    //cout << "ticks.size() = "<<ticks.size()<< "from 0 to "<< ticks.size()-1 << ", ticks[size-1]"<<ticks[ticks.size()-1]<< endl; 
+    //cout << "hpcp.size() = length of chords output array in the previous version of the code = " <<hpcp.size()<< endl;
 
-    _chordsAlgo->input("pcp").set(hpcpAverage);
-    _chordsAlgo->output("key").set(key);
-    _chordsAlgo->output("scale").set(scale);
-    _chordsAlgo->output("strength").set(str);
-    _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
-    _chordsAlgo->compute();
+    while( i<int(hpcp.size()-1) && tickIndex<=ticks.size()-1 ) {
+      
+      cout << "i = " << i << ", tickIndex = " << tickIndex << ", numFramesTick = " << numFramesTick << " , tickSize = " << ticks.size() << endl;;
 
-    if (scale == "minor") {
-      chords.push_back(key + 'm');
-    }
-    else {
-      chords.push_back(key);
-    }
+      int indexStart = initFrame;
+      int indexEnd = initFrame + numFramesTick-1;
 
-    strength.push_back(str);
+      if (indexEnd > hpcp.size()-1) break;
+      
+      initFrame = indexEnd + 1;
+      
+      //cout << ", b4 calculate diffTicks, tickIndex = " << tickIndex <<endl;
+      Real diffTicks = ticks[tickIndex] - ticks[tickIndex-1];
 
-  }
-}
+      tickIndex += 1;
+      i += numFramesTick-2;
+      numFramesTick = int((diffTicks * _sampleRate) / _hopSize) - 1;
+
+
+      vector<Real> hpcpMedian = medianFrames(hpcp, indexStart, indexEnd);
+      normalize(hpcpMedian);
+
+      _chordsAlgo->input("pcp").set(hpcpMedian);
+      _chordsAlgo->output("key").set(key);
+      _chordsAlgo->output("scale").set(scale);
+      _chordsAlgo->output("strength").set(str);
+      _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
+      _chordsAlgo->compute();
+
+      if (scale == "minor") {
+        chords.push_back(key + 'm');
+      }
+      else {
+        chords.push_back(key);
+      }
+
+      strength.push_back(str);
+    } // while
+}//method
 
 } // namespace standard
 } // namespace essentia
@@ -106,6 +138,7 @@ const char* ChordsDetection::description = standard::ChordsDetection::descriptio
 ChordsDetection::ChordsDetection() : AlgorithmComposite() {
 
   declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
+  //declareInput(_ticks, "ticks", "the ticks where is located the beat of the song");
   declareOutput(_chords, 1, "chords", "the resulting chords, from A to G");
   declareOutput(_strength, 1, "strength", "the strength of the chord");
 
@@ -153,12 +186,13 @@ AlgorithmStatus ChordsDetection::process() {
   // eaylon: windowSize is not intended for advancing, but for searching
   // nwack: maybe it could be a smart idea to jump from 1 beat to another instead
   //        of a fixed amount a time (arbitrary frame size)
-
+  
   for (int i=0; i<(int)hpcp.size(); i++) {
 
     int indexStart = max(0, i - _numFramesWindow/2);
     int indexEnd = min(i + _numFramesWindow/2, (int)hpcp.size());
 
+    //vector<Real> hpcpAverage = medianFrames(hpcp, indexStart, indexEnd);
     vector<Real> hpcpAverage = meanFrames(hpcp, indexStart, indexEnd);
     normalize(hpcpAverage);
 
