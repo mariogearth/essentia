@@ -17,51 +17,57 @@
  * version 3 along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-#ifndef ESSENTIA_CHORDSDETECTION_H
-#define ESSENTIA_CHORDSDETECTION_H
+#ifndef ESSENTIA_CHORDSDETECTIONBEATS_H
+#define ESSENTIA_CHORDSDETECTIONBEATS_H
 
 #include "algorithmfactory.h"
+#include <list>
+#include <iostream>
 
 namespace essentia {
 namespace standard {
 
-class ChordsDetection : public Algorithm {
+class ChordsDetectionBeats : public Algorithm {
 
   protected:
     Input<std::vector<std::vector<Real> > > _pcp;
+    Input<std::vector<Real> > _ticks;
     Output<std::vector<std::string> > _chords;
     Output<std::vector<Real> > _strength;
 
     Algorithm* _chordsAlgo;
     int _numFramesWindow;
+    Real _sampleRate; 
+    int _hopSize;
 
- public:
-  ChordsDetection() {
+  public:
+    ChordsDetectionBeats() {
 
-    _chordsAlgo = AlgorithmFactory::create("Key");
-    _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", false);
+      _chordsAlgo = AlgorithmFactory::create("Key");
+      _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", false);
 
-    declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
-    declareOutput(_chords, "chords", "the resulting chords, from A to G");
-    declareOutput(_strength, "strength", "the strength of the chord");
-  }
+      declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
+      declareInput(_ticks, "ticks", "the ticks where is located the beat of the song");
+      declareOutput(_chords, "chords", "the resulting chords, from A to G");
+      declareOutput(_strength, "strength", "the strength of the chord");
+    }
 
-  void declareParameters() {
-    declareParameter("sampleRate", "the sampling rate of the audio signal [Hz]", "(0,inf)", 44100.);
-    declareParameter("windowSize", "the size of the window on which to estimate the chords [s]", "(0,inf)", 2.0);
-    declareParameter("hopSize", "the hop size with which the input PCPs were computed", "(0,inf)", 2048);
-  }
+    void declareParameters() {
+      declareParameter("sampleRate", "the sampling rate of the audio signal [Hz]", "(0,inf)", 44100.);
+      declareParameter("windowSize", "the size of the window on which to estimate the chords [s]", "(0,inf)", 2.0);
+      declareParameter("hopSize", "the hop size with which the input PCPs were computed", "(0,inf)", 2048);
+    }
 
- ~ChordsDetection() {
-   delete _chordsAlgo;
- }
+    ~ChordsDetectionBeats() {
+     delete _chordsAlgo;
+   }
 
-  void configure();
+    void configure();
 
-  void compute();
+    void compute();
 
-  static const char* name;
-  static const char* description;
+    static const char* name;
+    static const char* description;
 
 };
 
@@ -76,13 +82,14 @@ class ChordsDetection : public Algorithm {
 namespace essentia {
 namespace streaming {
 
-/**
- * @todo make this algo smarter, and make it output chords as soon as they
- *       can be computed, not only at the end...
- */
-class ChordsDetection : public AlgorithmComposite {
+// TODO: the implementation of the streaming mode is from the old algorithm 
+// and it was not changed. Implement the streaming mode for the new chords
+// detection algorithm.
+
+class ChordsDetectionBeats : public AlgorithmComposite {
  protected:
   SinkProxy<std::vector<Real> > _pcp;
+  //SinkProxy<std::vector<Real> > _ticks; //correct? useless for the moment 
 
   Source<std::string> _chords;
   Source<Real> _strength;
@@ -91,10 +98,11 @@ class ChordsDetection : public AlgorithmComposite {
   Algorithm* _poolStorage;
   standard::Algorithm* _chordsAlgo;
   int _numFramesWindow;
+  
 
  public:
-  ChordsDetection();
-  ~ChordsDetection();
+  ChordsDetectionBeats();
+  ~ChordsDetectionBeats();
 
   void declareParameters() {
     declareParameter("sampleRate", "the sampling rate of the audio signal [Hz]", "(0,inf)", 44100.);
@@ -120,4 +128,4 @@ class ChordsDetection : public AlgorithmComposite {
 } // namespace streaming
 } // namespace essentia
 
-#endif // ESSENTIA_CHORDSDETECTION_H
+#endif // ESSENTIA_CHORDSDETECTIONBEATS_H

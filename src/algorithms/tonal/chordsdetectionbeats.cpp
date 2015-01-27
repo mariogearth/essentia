@@ -17,7 +17,7 @@
  * version 3 along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-#include "chordsdetection.h"
+#include "chordsdetectionbeats.h"
 #include "essentiamath.h"
 
 using namespace std;
@@ -25,8 +25,8 @@ using namespace std;
 namespace essentia {
 namespace standard {
 
-const char* ChordsDetection::name = "ChordsDetection";
-const char* ChordsDetection::description = DOC("Using pitch profile classes, this algorithm calculates the best matching major or minor triad and outputs the result as a string (e.g. A#, Bm, G#m, C). This algorithm uses the Sharp versions of each Flatted note (i.e. Bb -> A#).\n"
+const char* ChordsDetectionBeats::name = "ChordsDetectionBeats";
+const char* ChordsDetectionBeats::description = DOC("This algorithm takes the ChordsDetection algorithm from Essentia, and tries to enhance it by using a Beat Tracker for in between estimation.\n"
 "\n"
 "Note:\n"
 "  - This algorithm assumes that input pcps have been computed with framesize = 2*hopsize\n"
@@ -41,38 +41,62 @@ const char* ChordsDetection::description = DOC("Using pitch profile classes, thi
 "  key-finding algorithm reconsidered\", Music Perception vol. 17, no. 1,\n"
 "  pp. 65-100, 1999.");
 
-void ChordsDetection::configure() {
+void ChordsDetectionBeats::configure() {
   Real wsize = parameter("windowSize").toReal();
-  Real sampleRate = parameter("sampleRate").toReal();
-  int hopSize = parameter("hopSize").toInt();
+  _sampleRate = parameter("sampleRate").toReal();
+  _hopSize = parameter("hopSize").toInt();
 
   // NB: this assumes that frameSize = hopSize * 2, so that we don't have to
   //     require frameSize as well as parameter.
-  _numFramesWindow = int((wsize * sampleRate) / hopSize) - 1;
+  _numFramesWindow = int((wsize * _sampleRate) / _hopSize) - 1; // wsize = 1.0 , hopSize = 512 --> 85
 }
 
-void ChordsDetection::compute() {
+void ChordsDetectionBeats::compute() {
   const vector<vector<Real> >& hpcp = _pcp.get();
-  vector<string>& chords= _chords.get();
-  vector<Real>& strength= _strength.get();
-
+  vector<string>& chords = _chords.get();
+  vector<Real>& strength = _strength.get();
+  const vector<Real>& ticks = _ticks.get(); 
+  
   string key;
   string scale;
   Real firstToSecondRelativeStrength;
   Real str; // strength
 
-  chords.reserve(int(hpcp.size()/_numFramesWindow));
+  chords.reserve(int(hpcp.size()/_numFramesWindow)); // 1478/85 = 17
+  //out << "chords.reserve(int(hpcp.size()/_numFramesWindow)); = " << int(hpcp.size()/_numFramesWindow) << endl;
   strength.reserve(int(hpcp.size()/_numFramesWindow));
 
-  for (int i=0; i<int(hpcp.size()); ++i) {
+  //cout << "int(hpcp.size() = " << (int)hpcp.size() << endl; 
 
-    int indexStart = max(0, i - _numFramesWindow/2);
-    int indexEnd = min(i + _numFramesWindow/2, (int)hpcp.size());
+  // for (int j=0; j<ticks.size(); j++) {
+  //   cout << "tick " << j << " " << ticks[j] << endl;
+  // } 
+  if(ticks.size() < 2) { 
+  throw EssentiaException("Ticks vector should contain at least 2 elements.");
+  } 
 
-    vector<Real> hpcpAverage = meanFrames(hpcp, indexStart, indexEnd);
-    normalize(hpcpAverage);
+  Real diffTicks = 0.0f;
+  int numFramesTick = 0;
+  int initFrame = 0;
 
-    _chordsAlgo->input("pcp").set(hpcpAverage);
+  int frameStart=0;
+  int frameEnd=0;
+  //cout << "ticks.size() = "<<ticks.size()<< "from 0 to "<< ticks.size()-1 << ", ticks[size-1]"<<ticks[ticks.size()-1]<< endl; 
+  //cout << "hpcp.size() = length of chords output array in the previous version of the code = " <<hpcp.size()<< endl;
+
+  for (int i = 0; i < ticks.size()-1; ++i){
+
+    diffTicks = ticks[i+1] - ticks[i];
+    numFramesTick = int((diffTicks * _sampleRate) / _hopSize);
+    frameStart = int((ticks[i] * _sampleRate) / _hopSize);
+    frameEnd = frameStart + numFramesTick-1;
+
+    if (frameEnd > hpcp.size()-1) break;
+
+    vector<Real> hpcpMedian = medianFrames(hpcp, frameStart, frameEnd);
+    normalize(hpcpMedian);
+
+    _chordsAlgo->input("pcp").set(hpcpMedian);
     _chordsAlgo->output("key").set(key);
     _chordsAlgo->output("scale").set(scale);
     _chordsAlgo->output("strength").set(str);
@@ -88,8 +112,10 @@ void ChordsDetection::compute() {
 
     strength.push_back(str);
 
-  }
-}
+  } // for
+
+  
+}//method
 
 } // namespace standard
 } // namespace essentia
@@ -100,10 +126,10 @@ void ChordsDetection::compute() {
 namespace essentia {
 namespace streaming {
 
-const char* ChordsDetection::name = standard::ChordsDetection::name;
-const char* ChordsDetection::description = standard::ChordsDetection::description;
+const char* ChordsDetectionBeats::name = standard::ChordsDetectionBeats::name;
+const char* ChordsDetectionBeats::description = standard::ChordsDetectionBeats::description;
 
-ChordsDetection::ChordsDetection() : AlgorithmComposite() {
+ChordsDetectionBeats::ChordsDetectionBeats() : AlgorithmComposite() {
 
   declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
   declareOutput(_chords, 1, "chords", "the resulting chords, from A to G");
@@ -124,12 +150,12 @@ ChordsDetection::ChordsDetection() : AlgorithmComposite() {
   attach(_pcp, _poolStorage->input("data"));
 }
 
-ChordsDetection::~ChordsDetection() {
+ChordsDetectionBeats::~ChordsDetectionBeats() {
   delete _chordsAlgo;
   delete _poolStorage;
 }
 
-void ChordsDetection::configure() {
+void ChordsDetectionBeats::configure() {
   Real wsize = parameter("windowSize").toReal();
   Real sampleRate = parameter("sampleRate").toReal();
   int hopSize = parameter("hopSize").toInt();
@@ -139,7 +165,7 @@ void ChordsDetection::configure() {
   _numFramesWindow = int((wsize * sampleRate) / hopSize) - 1;
 }
 
-AlgorithmStatus ChordsDetection::process() {
+AlgorithmStatus ChordsDetectionBeats::process() {
   if (!shouldStop()) return PASS;
 
   const vector<vector<Real> >& hpcp = _pool.value<vector<vector<Real> > >("internal.hpcp");
@@ -153,12 +179,13 @@ AlgorithmStatus ChordsDetection::process() {
   // eaylon: windowSize is not intended for advancing, but for searching
   // nwack: maybe it could be a smart idea to jump from 1 beat to another instead
   //        of a fixed amount a time (arbitrary frame size)
-
+  
   for (int i=0; i<(int)hpcp.size(); i++) {
 
     int indexStart = max(0, i - _numFramesWindow/2);
     int indexEnd = min(i + _numFramesWindow/2, (int)hpcp.size());
 
+    //vector<Real> hpcpAverage = medianFrames(hpcp, indexStart, indexEnd);
     vector<Real> hpcpAverage = meanFrames(hpcp, indexStart, indexEnd);
     normalize(hpcpAverage);
 
@@ -182,7 +209,7 @@ AlgorithmStatus ChordsDetection::process() {
   return FINISHED;
 }
 
-void ChordsDetection::reset() {
+void ChordsDetectionBeats::reset() {
   AlgorithmComposite::reset();
   _chordsAlgo->reset();
 }
