@@ -84,7 +84,7 @@ void ChordsDetectionBeats::compute() {
   //cout << "ticks.size() = "<<ticks.size()<< "from 0 to "<< ticks.size()-1 << ", ticks[size-1]"<<ticks[ticks.size()-1]<< endl; 
   //cout << "hpcp.size() = length of chords output array in the previous version of the code = " <<hpcp.size()<< endl;
 
-  cout << "This is v.0.2" << endl;
+  cout << "This is v0.2" << endl;
   
   for (int i = 0; i < ticks.size()-1; ++i){
 
