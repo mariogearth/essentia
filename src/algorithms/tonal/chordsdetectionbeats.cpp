@@ -83,9 +83,9 @@ void ChordsDetectionBeats::compute() {
   int frameEnd=0;
   //cout << "ticks.size() = "<<ticks.size()<< "from 0 to "<< ticks.size()-1 << ", ticks[size-1]"<<ticks[ticks.size()-1]<< endl; 
   //cout << "hpcp.size() = length of chords output array in the previous version of the code = " <<hpcp.size()<< endl;
-  
-  // TODO canviar per un for entre els ticks
 
+  cout << "This is v.0.2" << endl;
+  
   for (int i = 0; i < ticks.size()-1; ++i){
 
     diffTicks = ticks[i+1] - ticks[i];
@@ -116,44 +116,7 @@ void ChordsDetectionBeats::compute() {
 
   } // for
 
-  // while( i < int(hpcp.size()-1) && tickIndex < ticks.size() ) {
-    
-  //   cout << "i = " << i << ", tickIndex = " << tickIndex << ", numFramesTick = " << numFramesTick << " , tickSize = " << ticks.size() << endl;;
-
-  //   int indexStart = initFrame;
-  //   int indexEnd = initFrame + numFramesTick-1;
-
-  //   if (indexEnd > hpcp.size()-1) break;
-    
-  //   initFrame = indexEnd + 1;
-    
-  //   //cout << ", b4 calculate diffTicks, tickIndex = " << tickIndex <<endl;
-  //   Real diffTicks = ticks[tickIndex] - ticks[tickIndex-1];
-
-  //   tickIndex += 1;
-  //   i += numFramesTick-2;
-  //   numFramesTick = int((diffTicks * _sampleRate) / _hopSize) - 1;
-
-
-  //   vector<Real> hpcpMedian = medianFrames(hpcp, indexStart, indexEnd);
-  //   normalize(hpcpMedian);
-
-  //   _chordsAlgo->input("pcp").set(hpcpMedian);
-  //   _chordsAlgo->output("key").set(key);
-  //   _chordsAlgo->output("scale").set(scale);
-  //   _chordsAlgo->output("strength").set(str);
-  //   _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
-  //   _chordsAlgo->compute();
-
-  //   if (scale == "minor") {
-  //     chords.push_back(key + 'm');
-  //   }
-  //   else {
-  //     chords.push_back(key);
-  //   }
-
-  //   strength.push_back(str);
-  // } // while
+  
 }//method
 
 } // namespace standard
