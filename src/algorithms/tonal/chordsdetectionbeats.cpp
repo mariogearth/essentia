@@ -86,7 +86,7 @@ void ChordsDetectionBeats::compute() {
   cout << "This is v.0.1" << endl;
   while( i < int(hpcp.size()-1) && tickIndex < ticks.size() ) {
     
-    cout << "i = " << i << ", tickIndex = " << tickIndex << ", numFramesTick = " << numFramesTick << " , tickSize = " << ticks.size() << endl;;
+    //cout << "i = " << i << ", tickIndex = " << tickIndex << ", numFramesTick = " << numFramesTick << " , tickSize = " << ticks.size() << endl;;
 
     int indexStart = initFrame;
     int indexEnd = initFrame + numFramesTick-1;
