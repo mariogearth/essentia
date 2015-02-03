@@ -83,7 +83,7 @@ void ChordsDetectionBeats::compute() {
   int frameEnd=0;
   //cout << "ticks.size() = "<<ticks.size()<< "from 0 to "<< ticks.size()-1 << ", ticks[size-1]"<<ticks[ticks.size()-1]<< endl; 
   //cout << "hpcp.size() = length of chords output array in the previous version of the code = " <<hpcp.size()<< endl;
-
+  cout << "This is angel's repository" << endl;
   for (int i = 0; i < ticks.size()-1; ++i){
 
     diffTicks = ticks[i+1] - ticks[i];

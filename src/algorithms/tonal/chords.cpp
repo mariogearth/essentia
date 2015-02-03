@@ -17,7 +17,7 @@
  * version 3 along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-#include "key.h"
+#include "chords.h"
 #include "essentiamath.h"
 
 using namespace std;
@@ -25,8 +25,8 @@ using namespace std;
 namespace essentia {
 namespace standard {
 
-const char* Key::name = "Key";
-const char* Key::description = DOC("Using pitch profile classes, this algorithm calculates the best matching key estimate for a given HPCP. The algorithm was severely adapted and changed from the original implementation for readability and speed.\n"
+const char* Chords::name = "Chords";
+const char* Chords::description = DOC("Using pitch profile classes, this algorithm calculates the best matching key estimate for a given HPCP. The algorithm was severely adapted and changed from the original implementation for readability and speed.\n"
 "\n"
 "Key will throw exceptions either when the input pcp size is not a positive multiple of 12 or if the key could not be found. Also if parameter \"scale\" is set to \"minor\" and the profile type is set to \"weichai\"\n"
 "\n"
@@ -39,12 +39,12 @@ const char* Key::description = DOC("Using pitch profile classes, this algorithm 
 "  pp. 65-100, 1999.");
 
 
-void Key::configure() {
+void Chords::configure() {
   _slope = parameter("slope").toReal();
   _numHarmonics = parameter("numHarmonics").toInt();
   _profileType = parameter("profileType").toString();
 
-  const char* keyNames[] = { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
+  const char* keyNames[] = { "A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab" }; // si falla cambiamos todo a #
   _keys = arrayToVector<string>(keyNames);
 
   Real profileTypes[][12] = {
@@ -170,7 +170,7 @@ void Key::configure() {
 }
 
 
-void Key::compute() {
+void Chords::compute() {
 
   const vector<Real>& pcp = _pcp.get();
 
@@ -253,26 +253,7 @@ void Key::compute() {
     max2 = max2Min;
   }
 
-  // In the case of Wei Chai algorithm, the scale is detected in a second step
-  // In this point, always the major relative is detected, as it is the first
-  // maximum
-  if (_profileType == "weichai") {
-    if (scale == MINOR)
-      throw EssentiaException("Key: error in Wei Chai algorithm. Wei Chai algorithm does not support minor scales.");
-
-    int fifth = keyIndex + 7*n;
-    if (fifth > pcpsize)
-      fifth -= pcpsize;
-    int sixth = keyIndex + 9*n;
-    if (sixth > pcpsize)
-      sixth -= pcpsize;
-
-    if (pcp[sixth] >  pcp[fifth]) {
-      keyIndex = sixth;
-      keyIndex = (int) (keyIndex * 12 / pcpsize + .5);
-      scale = MINOR;
-    }
-  }
+// aquí estaba weichai!
 
   // keyIndex = (int)(keyIndex * 12.0 / pcpsize + 0.5) % 12;
 
@@ -296,7 +277,7 @@ void Key::compute() {
 
 // this function resizes and interpolates the profiles to fit the
 // pcp size...
-void Key::resize(int pcpsize) {
+void Chords::resize(int pcpsize) {
   ///////////////////////////////////////////////////////////////////
   // Interpolate to get pcpsize values
   int n = pcpsize/12;
@@ -344,7 +325,7 @@ void Key::resize(int pcpsize) {
 // correlation coefficient with 'shift'
 // on of the vectors is shifted in time, and then the correlation is calculated,
 // just like a cross-correlation
-Real Key::correlation(const vector<Real>& v1, const Real mean1, const Real std1, const vector<Real>& v2, const Real mean2, const Real std2, const int shift) const
+Real Chords::correlation(const vector<Real>& v1, const Real mean1, const Real std1, const vector<Real>& v2, const Real mean2, const Real std2, const int shift) const
 {
   Real r = 0.0;
   int size = (int)v1.size();
@@ -374,7 +355,7 @@ Real Key::correlation(const vector<Real>& v1, const Real mean1, const Real std1,
   ..
   The contribution is weighted depending of the slope
 */
-void Key::addContributionHarmonics(const int pitchclass, const Real contribution, vector<Real>& M_chords) const
+void Chords::addContributionHarmonics(const int pitchclass, const Real contribution, vector<Real>& M_chords) const
 {
   Real weight = contribution;
 
@@ -410,7 +391,7 @@ void Key::addContributionHarmonics(const int pitchclass, const Real contribution
   @see http://www.songtrellis.com/directory/1146/chordTypes/majorChordTypes/majorTriad
   The three notes of the chord have the same weight
 */
-void Key::addMajorTriad(const int root, const Real contribution, vector<Real>& M_chords) const
+void Chords::addMajorTriad(const int root, const Real contribution, vector<Real>& M_chords) const
 {
   // Root
   addContributionHarmonics(root, contribution, M_chords);
@@ -434,7 +415,7 @@ void Key::addMajorTriad(const int root, const Real contribution, vector<Real>& M
   @see http://www.songtrellis.com/directory/1146/chordTypes/minorChordTypes/minorTriadMi
   The three notes of the chord have the same weight
 */
-void Key::addMinorTriad(int root, Real contribution, vector<Real>& M_chords) const
+void Chords::addMinorTriad(int root, Real contribution, vector<Real>& M_chords) const
 {
   // Root
   addContributionHarmonics(root, contribution, M_chords);
@@ -461,12 +442,12 @@ void Key::addMinorTriad(int root, Real contribution, vector<Real>& M_chords) con
 namespace essentia {
 namespace streaming {
 
-const char* Key::name = standard::Key::name;
-const char* Key::description = standard::Key::description;
+const char* Chords::name = standard::Chords::name;
+const char* Chords::description = standard::Chords::description;
 
-Key::Key() : AlgorithmComposite() {
+Chords::Chords() : AlgorithmComposite() {
 
-  _keyAlgo = standard::AlgorithmFactory::create("Key");
+  _keyAlgo = standard::AlgorithmFactory::create("Chords");
   _poolStorage = new PoolStorage<std::vector<Real> >(&_pool, "internal.hpcp");
 
   declareInput(_poolStorage->input("data"), 1, "pcp", "the input pitch class profile");
@@ -475,13 +456,13 @@ Key::Key() : AlgorithmComposite() {
   declareOutput(_strength, 0, "strength", "the strength of the estimated key");
 }
 
-Key::~Key() {
+Chords::~Chords() {
   delete _keyAlgo;
   delete _poolStorage;
 }
 
 
-AlgorithmStatus Key::process() {
+AlgorithmStatus Chords::process() {
   if (!shouldStop()) return PASS;
 
   const vector<vector<Real> >& hpcpKey = _pool.value<vector<vector<Real> > >("internal.hpcp");
@@ -506,7 +487,7 @@ AlgorithmStatus Key::process() {
 }
 
 
-void Key::reset() {
+void Chords::reset() {
   AlgorithmComposite::reset();
   _keyAlgo->reset();
 }
