@@ -67,6 +67,9 @@ void Chords::configure() {
     // Tonic triad
     { 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0 },
     { 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 },
+	{ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 },
+	{ 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 },
+	
 
     // Temperley MIREX 2005
     { 0.748, 0.060, 0.488, 0.082, 0.67, 0.46, 0.096, 0.715, 0.104, 0.366, 0.057, 0.4 },
@@ -79,6 +82,7 @@ void Chords::configure() {
   };
 
 #define SET_PROFILE(i) _M = arrayToVector<Real>(profileTypes[2*i]); _m = arrayToVector<Real>(profileTypes[2*i+1])
+//#define SET_PROFILE_CHORD(i) _M
 
   if      (_profileType == "diatonic")      { SET_PROFILE(0); }
   else if (_profileType == "krumhansl")     { SET_PROFILE(1); }
@@ -94,6 +98,8 @@ void Chords::configure() {
   // Compute the other vectors getting into account chords:
   vector<Real> M_chords(12, (Real)0.0);
   vector<Real> m_chords(12, (Real)0.0);
+  vector<Real> aug_chords(12, (Real)0.0);
+  vector<Real> dim_chords(12, (Real)0.0);
 
   /* Under test: Purwins et al.
   for (int n=0; n<12; n++) {
@@ -267,6 +273,23 @@ void Chords::compute() {
       maxMin = corrMinor;
       keyIndexMin = shift;
     }
+	
+    Real corrAugmented = correlation(pcp, mean_pcp, std_pcp, _profile_doM, _mean_profile_M, _std_profile_M, shift);
+    // Compute maximum value for major keys
+    if (corrMajor > maxMaj) {
+      max2Maj = maxMaj;
+      maxMaj = corrMajor;
+      keyIndexMaj = shift;
+    }
+	
+    Real corrDisminished = correlation(pcp, mean_pcp, std_pcp, _profile_doM, _mean_profile_M, _std_profile_M, shift);
+    // Compute maximum value for major keys
+    if (corrMajor > maxMaj) {
+      max2Maj = maxMaj;
+      maxMaj = corrMajor;
+      keyIndexMaj = shift;
+    }
+	
   }
 
   if (maxMaj >= maxMin) {
