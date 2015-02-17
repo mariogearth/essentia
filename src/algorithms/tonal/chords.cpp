@@ -143,25 +143,30 @@ void Chords::configure() {
     - For each note, we add its contribution to the different harmonics
   */
 
-  // MAJOR
-  addMajorTriad(0, _M[0], M_chords);
-  addMajorTriad(4, _M[4], M_chords);
-  addMajorTriad(7, _M[7], M_chords);
-
-  // MINOR
-  addMinorTriad(0, _m[0], m_chords);
-  addMinorTriad(3, _m[3], m_chords);
-  addMinorTriad(7, _m[7], m_chords);
-
-  // AUGMENTED
-  addMajorThird(0, _Aug[0], Aug_chords);
-  addMajorThird(4, _Aug[4], Aug_chords);
-  addMajorThird(8, _Aug[8], Aug_chords);
-
-  // DISMINISHED
-  addMinorThird(0, _dim[0], dim_chords);
-  addMinorThird(3, _dim[3], dim_chords);
-  addMinorThird(6, _dim[6], dim_chords);
+  ///////////////////////////////////////////////////////////////////
+  // This solution does not work at all
+  
+  // // MAJOR
+  // addMajorTriad(0, _M[0], M_chords);
+  // addMajorTriad(4, _M[4], M_chords);
+  // addMajorTriad(7, _M[7], M_chords);
+  //
+  // // MINOR
+  // addMinorTriad(0, _m[0], m_chords);
+  // addMinorTriad(3, _m[3], m_chords);
+  // addMinorTriad(7, _m[7], m_chords);
+  //
+  // // AUGMENTED
+  // addMajorThird(0, _Aug[0], Aug_chords);
+  // addMajorThird(4, _Aug[4], Aug_chords);
+  // addMajorThird(8, _Aug[8], Aug_chords);
+  //
+  // // DISMINISHED
+  // addMinorThird(0, _dim[0], dim_chords);
+  // addMinorThird(3, _dim[3], dim_chords);
+  // addMinorThird(6, _dim[6], dim_chords);
+  
+  
   
   
 
