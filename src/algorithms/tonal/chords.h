@@ -47,7 +47,7 @@ class Chords : public Algorithm {
 
   void declareParameters() {
     declareParameter("usePolyphony", "enables the use of polyphonic profiles to define key profiles (this includes the contributions from triads as well as pitch harmonics)", "{true,false}", true);
-    declareParameter("useThreeChords", "consider only the 3 main triad chords of the key (T, D, SD) to build the polyphonic profiles", "{true,false}", true);
+    declareParameter("useThreeChords", "consider only the 3 main triad chords of the key (T, D, SD) to build the polyphonic profiles", "{true,false}", false);
     declareParameter("numHarmonics", "number of harmonics that should contribute to the polyphonic profile (1 only considers the fundamental harmonic)", "[1,inf)", 4);
     declareParameter("slope", "value of the slope of the exponential harmonic contribution to the polyphonic profile", "[0,inf)", 0.6);
     declareParameter("profileType", "the type of polyphic profile to use for correlation calculation", "{diatonic,krumhansl,temperley,weichai,tonictriad,temperley2005,thpcp,shaath,gomez,noland}", "temperley");
@@ -63,18 +63,30 @@ class Chords : public Algorithm {
 protected:
   enum Scales {
     MAJOR = 0,
-    MINOR = 1
+    MINOR = 1,
+	AUGMENTED = 2,
+	DISMINISHED = 3,
   };
 
   std::vector<Real> _m;
   std::vector<Real> _M;
+  std::vector<Real> _dim;
+  std::vector<Real> _Aug;
+  
   std::vector<Real> _profile_doM;
   std::vector<Real> _profile_dom;
+  std::vector<Real> _profile_doAug;
+  std::vector<Real> _profile_doDim;
 
   Real _mean_profile_M;
   Real _mean_profile_m;
+  Real _mean_profile_Aug;
+  Real _mean_profile_dim;
+  
   Real _std_profile_M;
   Real _std_profile_m;
+  Real _std_profile_Aug;
+  Real _std_profile_dim;
 
   Real _slope;
   int _numHarmonics;
@@ -86,7 +98,10 @@ protected:
   void addContributionHarmonics(const int pitchclass, const Real contribution, std::vector<Real>& M_chords) const;
   void addMajorTriad(const int root, const Real contribution, std::vector<Real>& M_chords) const;
   void addMinorTriad(int root, Real contribution, std::vector<Real>& M_chords) const;
+  void addMajorThird(const int root, const Real contribution, std::vector<Real>& Aug_chords) const;
+  void addMinorThird(int root, Real contribution, std::vector<Real>& dim_chords) const;
   void resize(int size);
+  
 };
 
 } // namespace standard
@@ -116,7 +131,7 @@ class Chords : public AlgorithmComposite {
 
   void declareParameters() {
     declareParameter("usePolyphony", "enables the use of polyphonic profiles to define key profiles (this includes the contributions from triads as well as pitch harmonics)", "{true,false}", true);
-    declareParameter("useThreeChords", "consider only the 3 main triad chords of the key (T, D, SD) to build the polyphonic profiles", "{true,false}", true);
+    declareParameter("useThreeChords", "consider only the 3 main triad chords of the key (T, D, SD) to build the polyphonic profiles", "{true,false}", false);
     declareParameter("numHarmonics", "number of harmonics that should contribute to the polyphonic profile (1 only considers the fundamental harmonic)", "[1,inf)", 4);
     declareParameter("slope", "value of the slope of the exponential harmonic contribution to the polyphonic profile", "[0,inf)", 0.6);
     declareParameter("profileType", "the type of polyphic profile to use for correlation calculation", "{diatonic,krumhansl,temperley,weichai,tonictriad,temperley2005,thpcp,shaath,gomez,noland}", "temperley");

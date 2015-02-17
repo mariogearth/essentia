@@ -43,7 +43,7 @@ class ChordsDetectionBeats : public Algorithm {
   public:
     ChordsDetectionBeats() {
 
-      _chordsAlgo = AlgorithmFactory::create("Key");
+      _chordsAlgo = AlgorithmFactory::create("Chords");
       _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", false);
 
       declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");

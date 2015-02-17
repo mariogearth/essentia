@@ -51,38 +51,49 @@ void Chords::configure() {
     // Diatonic
     { 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1 },
     { 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1 },
+    { 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1 },
+    { 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1 },
 
     // Krumhansl
+    { 6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88 },
+    { 6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17 },
     { 6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88 },
     { 6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17 },
 
     // A revised version of the key profiles, by David Temperley, see [2]
     { 5.0, 2.0, 3.5, 2.0, 4.5, 4.0, 2.0, 4.5, 2.0, 3.5, 1.5, 4.0 },
     { 5.0, 2.0, 3.5, 4.5, 2.0, 4.0, 2.0, 4.5, 3.5, 2.0, 1.5, 4.0 },
+    { 5.0, 2.0, 3.5, 2.0, 4.5, 4.0, 2.0, 4.5, 2.0, 3.5, 1.5, 4.0 },
+    { 5.0, 2.0, 3.5, 4.5, 2.0, 4.0, 2.0, 4.5, 3.5, 2.0, 1.5, 4.0 },
 
     // Wei Chai MIT PhD thesis
     { 81302, 320, 65719, 1916, 77469, 40928, 2223, 83997, 1218, 39853, 1579, 28908 },
     { 39853, 1579, 28908, 81302, 320, 65719, 1916, 77469, 40928, 2223, 83997, 1218 },
+    { 81302, 320, 65719, 1916, 77469, 40928, 2223, 83997, 1218, 39853, 1579, 28908 },
+    { 39853, 1579, 28908, 81302, 320, 65719, 1916, 77469, 40928, 2223, 83997, 1218 },
 
     // Tonic triad
-    { 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0 },
-    { 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 },
-	{ 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0 },
-	{ 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 },
+    { 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0 }, // major
+    { 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 }, // minor
+    { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 }, // augmented
+	{ 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 }, // disminished
 	
 
     // Temperley MIREX 2005
     { 0.748, 0.060, 0.488, 0.082, 0.67, 0.46, 0.096, 0.715, 0.104, 0.366, 0.057, 0.4 },
     { 0.712, 0.084, 0.474, 0.618, 0.049, 0.46, 0.105, 0.747, 0.404, 0.067, 0.133, 0.33 },
+    { 0.748, 0.060, 0.488, 0.082, 0.67, 0.46, 0.096, 0.715, 0.104, 0.366, 0.057, 0.4 },
+    { 0.712, 0.084, 0.474, 0.618, 0.049, 0.46, 0.105, 0.747, 0.404, 0.067, 0.133, 0.33 },
 
     // Statistics THPCP over all the evaluation set
     { 0.95162, 0.20742, 0.71758, 0.22007, 0.71341, 0.48841, 0.31431, 1.00000, 0.20957, 0.53657, 0.22585, 0.55363 },
-    { 0.94409, 0.21742, 0.64525, 0.63229, 0.27897, 0.57709, 0.26428, 1.0000, 0.26428, 0.30633, 0.45924, 0.35929 }
+    { 0.94409, 0.21742, 0.64525, 0.63229, 0.27897, 0.57709, 0.26428, 1.0000, 0.26428, 0.30633, 0.45924, 0.35929 },
+    { 0.95162, 0.20742, 0.71758, 0.22007, 0.71341, 0.48841, 0.31431, 1.00000, 0.20957, 0.53657, 0.22585, 0.55363 },
+    { 0.94409, 0.21742, 0.64525, 0.63229, 0.27897, 0.57709, 0.26428, 1.0000, 0.26428, 0.30633, 0.45924, 0.35929 },
 
   };
 
-#define SET_PROFILE(i) _M = arrayToVector<Real>(profileTypes[2*i]); _m = arrayToVector<Real>(profileTypes[2*i+1])
-//#define SET_PROFILE_CHORD(i) _M
+#define SET_PROFILE(i) _M = arrayToVector<Real>(profileTypes[4*i]); _m = arrayToVector<Real>(profileTypes[4*i+1]); _Aug = arrayToVector<Real>(profileTypes[4*i+2]); _dim = arrayToVector<Real>(profileTypes[4*i+3])	 
 
   if      (_profileType == "diatonic")      { SET_PROFILE(0); }
   else if (_profileType == "krumhansl")     { SET_PROFILE(1); }
@@ -98,7 +109,7 @@ void Chords::configure() {
   // Compute the other vectors getting into account chords:
   vector<Real> M_chords(12, (Real)0.0);
   vector<Real> m_chords(12, (Real)0.0);
-  vector<Real> aug_chords(12, (Real)0.0);
+  vector<Real> Aug_chords(12, (Real)0.0);
   vector<Real> dim_chords(12, (Real)0.0);
 
   /* Under test: Purwins et al.
@@ -132,73 +143,33 @@ void Chords::configure() {
     - For each note, we add its contribution to the different harmonics
   */
 
-  /** MAJOR KEY */
-  // Tonic (I)
+  // MAJOR
   addMajorTriad(0, _M[0], M_chords);
-
-  if (!parameter("useThreeChords").toBool())
-  {
-    // II
-    addMinorTriad(2, _M[2], M_chords);
-    // Only root: AddContributionHarmonics(2, _M[2], M_chords);
-    // III
-    addMinorTriad(4, _M[4], M_chords);
-    // Only root: AddContributionHarmonics(4, _M[4], M_chords);
-  }
-
-  // Subdominant (IV)
-  addMajorTriad(5, _M[5], M_chords);
-  // Dominant (V)
+  addMajorTriad(4, _M[4], M_chords);
   addMajorTriad(7, _M[7], M_chords);
 
-  if (!parameter("useThreeChords").toBool()) {
-    // VI
-    addMinorTriad(9, _M[9], M_chords);
-    // Only root: AddContributionHarmonics(9, _M[9], M_chords);
-    // VII (5th diminished)
-    addContributionHarmonics(11, _M[11], M_chords);
-    addContributionHarmonics(2 , _M[11], M_chords);
-    addContributionHarmonics(5 , _M[11], M_chords);
-    // Only root: AddContributionHarmonics(11, _M[11], M_chords);
-  }
-
-  /** MINOR KEY */
-  // Tonica I
+  // MINOR
   addMinorTriad(0, _m[0], m_chords);
-  if (!parameter("useThreeChords").toBool()){
-    // II (5th diminished)
-    addContributionHarmonics(2, _m[2], m_chords);
-    addContributionHarmonics(5, _m[2], m_chords);
-    addContributionHarmonics(8, _m[2], m_chords);
-    // Only root: AddContributionHarmonics(2, _m[2], m_chords);
+  addMinorTriad(3, _m[3], m_chords);
+  addMinorTriad(7, _m[7], m_chords);
 
-    // III (5th augmented)
-    addContributionHarmonics(3, _m[3], m_chords);
-    addContributionHarmonics(7, _m[3], m_chords);
-    addContributionHarmonics(11,_m[3], m_chords); // Harmonic minor scale! antes 10!!!
-    // Only root: AddContributionHarmonics(3, _m[3], m_chords);
-  }
+  // AUGMENTED
+  addMajorThird(0, _Aug[0], Aug_chords);
+  addMajorThird(4, _Aug[4], Aug_chords);
+  addMajorThird(8, _Aug[8], Aug_chords);
 
-  // Subdominant (IV)
-  addMinorTriad(5, _m[5], m_chords);
-
-  // Dominant (V) (harmonic minor scale)
-  addMajorTriad(7, _m[7], m_chords);
-
-  if (!parameter("useThreeChords").toBool()) {
-    // VI
-    addMajorTriad(8, _m[8], m_chords);
-    // Only root: AddContributionHarmonics(8, _m[8], m_chords);
-    // VII (diminished 5th)
-    addContributionHarmonics(11, _m[8], m_chords);
-    addContributionHarmonics(2, _m[8], m_chords);
-    addContributionHarmonics(5, _m[8], m_chords);
-    // Only root: AddContributionHarmonics(11, _m[8], m_chords);
-  }
+  // DISMINISHED
+  addMinorThird(0, _dim[0], dim_chords);
+  addMinorThird(3, _dim[3], dim_chords);
+  addMinorThird(6, _dim[6], dim_chords);
+  
+  
 
   if (parameter("usePolyphony").toBool()) {
     _M = M_chords;
     _m = m_chords;
+	_Aug = Aug_chords;
+	_dim = dim_chords;
   }
 
   resize(parameter("pcpSize").toInt());
@@ -245,7 +216,15 @@ void Chords::compute() {
   Real maxMin = -1;
   Real max2Min = -1;
   int keyIndexMin = -1;
+  
+  Real maxAug = -1;
+  Real max2Aug = -1;
+  int keyIndexAug = -1;
 
+  Real maxDim = -1;
+  Real max2Dim = -1;
+  int keyIndexDim = -1;
+  
   // calculate the correlation between the profiles and the PCP...
   // we shift the profile around to find the best match
   for (int shift=0; shift<pcpsize; shift++) {
@@ -276,34 +255,71 @@ void Chords::compute() {
 	
     Real corrAugmented = correlation(pcp, mean_pcp, std_pcp, _profile_doM, _mean_profile_M, _std_profile_M, shift);
     // Compute maximum value for major keys
-    if (corrMajor > maxMaj) {
-      max2Maj = maxMaj;
-      maxMaj = corrMajor;
+    if (corrAugmented > maxAug) {
+      max2Maj = maxAug;
+      maxMaj = corrAugmented;
       keyIndexMaj = shift;
     }
 	
     Real corrDisminished = correlation(pcp, mean_pcp, std_pcp, _profile_doM, _mean_profile_M, _std_profile_M, shift);
     // Compute maximum value for major keys
-    if (corrMajor > maxMaj) {
-      max2Maj = maxMaj;
-      maxMaj = corrMajor;
+    if (corrDisminished > maxDim) {
+      max2Maj = maxDim;
+      maxMaj = corrDisminished;
       keyIndexMaj = shift;
     }
 	
   }
+	
+  std::vector<Real> maxArray;
+  maxArray.push_back(maxMaj);
+  maxArray.push_back(maxMin);
+  maxArray.push_back(maxAug);
+  maxArray.push_back(maxDim);
+  
+ 	   
+  int maxIndex = 0;
+  max = maxMaj;
+  for(int i=0; i<4; i++){
+	  if(maxArray[i] > max){
+	  	  max = maxArray[i];
+		  maxIndex = i;
+	  }
+  }
+  
+  cout << "maj " << maxArray[0] << " , min " << maxArray[1] << ", aug " << maxArray[2] << ", dim " << maxArray[3] << "   max " << max << ", maxIndex " << maxIndex << endl;
+  
 
-  if (maxMaj >= maxMin) {
-    keyIndex = (int) (keyIndexMaj *  12 / pcpsize + .5);
-    scale = MAJOR;
-    max = maxMaj;
-    max2 = max2Maj;
+  switch(maxIndex){
+	  case 0:
+		keyIndex = (int) (keyIndexMaj *  12 / pcpsize + .5);
+		scale = MAJOR;
+		max2 = max2Maj;
+	  	cout << "case 0" << endl;
+		break;
+	  case 1:
+      	keyIndex = (int) (keyIndexMin * 12 / pcpsize + .5);
+      	scale = MINOR;
+      	max2 = max2Min;
+		cout << "case 1" << endl;
+		break;		
+	  case 2:
+		keyIndex = (int) (keyIndexAug *  12 / pcpsize + .5);
+		scale = AUGMENTED;
+		max2 = max2Aug;
+	  	cout << "case 2" << endl;
+		break;
+	  case 3:
+		keyIndex = (int) (keyIndexDim *  12 / pcpsize + .5);
+		scale = DISMINISHED;
+		max2 = max2Dim;
+		cout << "case 3" << endl;
+		break;
+	  default:
+	  	cout << "default" << endl;
+	  	break;
   }
-  else {
-    keyIndex = (int) (keyIndexMin * 12 / pcpsize + .5);
-    scale = MINOR;
-    max = maxMin;
-    max2 = max2Min;
-  }
+  
 
   // In the case of Wei Chai algorithm, the scale is detected in a second step
   // In this point, always the major relative is detected, as it is the first
@@ -337,7 +353,22 @@ void Chords::compute() {
 
   // first three outputs are key, scale and strength
   _key.get() = _keys[keyIndex];
-  _scale.get() = scale == MAJOR ? "major" : "minor";
+  
+  if (scale == MAJOR){
+	  _scale.get() = "major";
+  }
+  else if(scale == MINOR){
+	  _scale.get() = "minor";
+  }
+  else if(scale == AUGMENTED){
+	  _scale.get() = "augmented";
+  }
+  else if(scale == DISMINISHED){
+	  _scale.get() = "disminished";  
+  }
+  else{}
+  		  
+  
   _strength.get() = max;
 
   // this one outputs the relative difference between the maximum and the
@@ -355,41 +386,59 @@ void Chords::resize(int pcpsize) {
 
   _profile_doM.resize(pcpsize);
   _profile_dom.resize(pcpsize);
+  _profile_doAug.resize(pcpsize);
+  _profile_doDim.resize(pcpsize);
 
   for (int i=0; i<12; i++) {
 
     _profile_doM[i*n] = _M[i];
     _profile_dom[i*n] = _m[i];
+    _profile_doAug[i*n] = _Aug[i];
+    _profile_doDim[i*n] = _dim[i];	
 
     // Two interpolated values
-    Real incr_M, incr_m;
+    Real incr_M, incr_m, incr_Aug, incr_dim;
     if (i == 11) {
       incr_M = (_M[11] - _M[0]) / n;
       incr_m = (_m[11] - _m[0]) / n;
+      incr_Aug = (_Aug[11] - _Aug[0]) / n;
+      incr_dim = (_dim[11] - _dim[0]) / n;
     }
     else {
       incr_M = (_M[i] - _M[i+1]) / n;
       incr_m = (_m[i] - _m[i+1]) / n;
+      incr_Aug = (_Aug[i] - _Aug[i+1]) / n;
+      incr_dim = (_dim[i] - _dim[i+1]) / n;
     }
 
     for (int j=1; j<=(n-1); j++) {
       _profile_doM[i*n+j] = _M[i] - j * incr_M;
       _profile_dom[i*n+j] = _m[i] - j * incr_m;
+      _profile_doAug[i*n+j] = _Aug[i] - j * incr_Aug;
+      _profile_doDim[i*n+j] = _dim[i] - j * incr_dim;
     }
   }
 
   _mean_profile_M = mean(_profile_doM);
   _mean_profile_m = mean(_profile_dom);
+  _mean_profile_Aug = mean(_profile_doAug);
+  _mean_profile_dim = mean(_profile_doDim);
   _std_profile_M = 0;
   _std_profile_m = 0;
+  _std_profile_Aug = 0;
+  _std_profile_dim = 0;
 
   // Compute Standard Deviations
   for (int i=0; i<pcpsize; i++) {
     _std_profile_M += (_profile_doM[i] - _mean_profile_M) * (_profile_doM[i] - _mean_profile_M);
     _std_profile_m += (_profile_dom[i] - _mean_profile_m) * (_profile_dom[i] - _mean_profile_m);
+    _std_profile_Aug += (_profile_doAug[i] - _mean_profile_Aug) * (_profile_doAug[i] - _mean_profile_Aug);
+    _std_profile_dim += (_profile_doDim[i] - _mean_profile_dim) * (_profile_doDim[i] - _mean_profile_dim);
   }
   _std_profile_M = sqrt(_std_profile_M);
   _std_profile_m = sqrt(_std_profile_m);
+  _std_profile_Aug = sqrt(_std_profile_Aug);
+  _std_profile_dim = sqrt(_std_profile_dim);
 }
 
 
@@ -455,13 +504,6 @@ void Chords::addContributionHarmonics(const int pitchclass, const Real contribut
   }
 }
 
-/**
-  Function that adds the contribution of a chord with root note 'root' to its major triad
-  A major triad includes notes from three different classes of pitch: the root, the major 3rd and perfect 5th.
-  This is the most relaxed, most consonant chord in all of harmony.
-  @see http://www.songtrellis.com/directory/1146/chordTypes/majorChordTypes/majorTriad
-  The three notes of the chord have the same weight
-*/
 void Chords::addMajorTriad(const int root, const Real contribution, vector<Real>& M_chords) const
 {
   // Root
@@ -480,12 +522,7 @@ void Chords::addMajorTriad(const int root, const Real contribution, vector<Real>
   addContributionHarmonics(fifth, contribution, M_chords);
 
 }
-/**
-  Function that adds the contribution of a chord with root note 'root' to its minor triad
-  A minor triad includes notes from three different classes of pitch: the root, the minor 3rd and perfect 5th.
-  @see http://www.songtrellis.com/directory/1146/chordTypes/minorChordTypes/minorTriadMi
-  The three notes of the chord have the same weight
-*/
+
 void Chords::addMinorTriad(int root, Real contribution, vector<Real>& M_chords) const
 {
   // Root
@@ -502,6 +539,44 @@ void Chords::addMinorTriad(int root, Real contribution, vector<Real>& M_chords) 
   if (fifth > 11)
     fifth -= 12;
   addContributionHarmonics(fifth, contribution, M_chords);
+}
+
+void Chords::addMajorThird(const int root, const Real contribution, vector<Real>& M_chords) const
+{
+  // Root
+  addContributionHarmonics(root, contribution, M_chords);
+
+  // Major 3rd
+  int third = root + 4;
+  if (third > 11)
+    third -= 12;
+  addContributionHarmonics(third, contribution, M_chords);
+
+  // Perfect 5th
+  int fifth = root + 8;
+  if (fifth > 11)
+    fifth -= 12;
+  addContributionHarmonics(fifth, contribution, M_chords);
+
+}
+
+void Chords::addMinorThird(int root, Real contribution, vector<Real>& M_chords) const
+{
+  // Root
+  addContributionHarmonics(root, contribution, M_chords);
+
+  // Major 3rd
+  int third = root + 3;
+  if (third > 11)
+    third -= 12;
+  addContributionHarmonics(third, contribution, M_chords);
+
+  // Perfect 5th
+  int fifth = root + 6;
+  if (fifth > 11)
+    fifth -= 12;
+  addContributionHarmonics(fifth, contribution, M_chords);
+
 }
 
 } // namespace standard
