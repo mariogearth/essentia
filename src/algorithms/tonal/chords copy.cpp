@@ -168,21 +168,92 @@ void Chords::configure() {
   
   // Para acordes, debemos comparar con modelo de acorde, no de la escala...
   
-  /** MAJOR CHORD */
+  /** MAJOR KEY */
+  // Tonic (I)
   addMajorTriad(0, _M[0], M_chords);
-  //addMajorThird(0, _Aug[0], Aug_chords);											// added 
+  //addMajorThird(0, _Aug[0], Aug_chords);												// added 
 
-  /** MINOR CHORD */
+  if (!parameter("useThreeChords").toBool())
+  {
+    // II
+    addMinorTriad(2, _M[2], M_chords);
+	//addMinorThird(2, _dim[2], dim_chords); 												// added
+    // Only root: AddContributionHarmonics(2, _M[2], M_chords);
+    // III
+    addMinorTriad(4, _M[4], M_chords);
+	//addMinorThird(4, _dim[4], dim_chords); 												// added
+    // Only root: AddContributionHarmonics(4, _M[4], M_chords);
+  }
+
+  // Subdominant (IV)
+  addMajorTriad(5, _M[5], M_chords);
+  //addMajorThird(5, _Aug[5], Aug_chords); 												// added
+  // Dominant (V)
+  addMajorTriad(7, _M[7], M_chords);
+  //addMajorThird(7, _Aug[7], Aug_chords); 												// added
+
+  if (!parameter("useThreeChords").toBool()) {
+    // VI
+    addMinorTriad(9, _M[9], M_chords);
+	//addMinorThird(9, _dim[9], dim_chords);
+    // Only root: AddContributionHarmonics(9, _M[9], M_chords);
+    // VII (5th diminished)
+    addContributionHarmonics(11, _M[11], M_chords);
+    addContributionHarmonics(2 , _M[11], M_chords);
+    addContributionHarmonics(5 , _M[11], M_chords);
+	
+    addContributionHarmonics(11, _dim[11], Aug_chords);									// added
+    addContributionHarmonics(2 , _[11], Aug_chords);									// added
+    addContributionHarmonics(5 , _Aug[11], Aug_chords);									// added
+    // Only root: AddContributionHarmonics(11, _M[11], M_chords);
+  }
+
+  /** MINOR KEY */
+  // Tonica I
   addMinorTriad(0, _m[0], m_chords);
   //addMinorThird(0, _dim[0], dim_chords);											// added
+  if (!parameter("useThreeChords").toBool()){
+    // II (5th diminished)
+    addContributionHarmonics(2, _m[2], m_chords);
+    addContributionHarmonics(5, _m[2], m_chords);
+    addContributionHarmonics(8, _m[2], m_chords);
+    addContributionHarmonics(2, _dim[2], dim_chords);											// added
+    addContributionHarmonics(5, _dim[2], dim_chords);											// added
+    addContributionHarmonics(8, _dim[2], dim_chords);											// added
+    // Only root: AddContributionHarmonics(2, _m[2], m_chords);
 
-  /** DIMINISHED CHORD */
-  addDimTriad(0, _dim[0], dim_chords);
-  //addMinorThird(0, _dim[0], dim_chords);											// added
+    // III (5th augmented)
+    addContributionHarmonics(3, _m[3], m_chords);
+    addContributionHarmonics(7, _m[3], m_chords);
+    addContributionHarmonics(11,_m[3], m_chords); // Harmonic minor scale 
+    addContributionHarmonics(3, _Aug[3], Aug_chords);											// added
+    addContributionHarmonics(7, _Aug[3], Aug_chords);											// added
+    addContributionHarmonics(11,_Aug[3], Aug_chords); 											// added
+    // Only root: AddContributionHarmonics(3, _m[3], m_chords);
+  }
 
-  /** MINOR CHORD */
-  addMinorTriad(0, _Aug[0], Aug_chords);
-  //addMinorThird(0, _dim[0], dim_chords);											// added
+  // Subdominant (IV)
+  addMinorTriad(5, _m[5], m_chords);
+  //addMinorThird(5, _dim[5], dim_chords);											// added
+
+  // Dominant (V) (harmonic minor scale)
+  addMajorTriad(7, _m[7], m_chords);
+  //addMajorThird(7, _dim[7], dim_chords);											// added
+
+  if (!parameter("useThreeChords").toBool()) {
+    // VI
+    addMajorTriad(8, _m[8], m_chords);
+	//addMajorThird(8, _dim[8], dim_chords);											// added
+    // Only root: AddContributionHarmonics(8, _m[8], m_chords);
+    // VII (diminished 5th)
+    addContributionHarmonics(11, _m[8], m_chords);
+    addContributionHarmonics(2, _m[8], m_chords);
+    addContributionHarmonics(5, _m[8], m_chords);
+    addContributionHarmonics(11, _dim[8], dim_chords);											// added
+    addContributionHarmonics(2, _dim[8], dim_chords);											// added
+    addContributionHarmonics(5, _dim[8], dim_chords);											// added
+    // Only root: AddContributionHarmonics(11, _m[8], m_chords);
+  }
 
   if (parameter("usePolyphony").toBool()) {
     _M = M_chords;
@@ -340,6 +411,10 @@ void Chords::compute() {
 	  	break;
   }
   
+
+  // In the case of Wei Chai algorithm, the scale is detected in a second step
+  // In this point, always the major relative is detected, as it is the first
+  // maximum
   if (_profileType == "weichai") {
     if (scale == MINOR)
       throw EssentiaException("Key: error in Wei Chai algorithm. Wei Chai algorithm does not support minor scales.");
@@ -358,11 +433,16 @@ void Chords::compute() {
     }
   }
 
+  // keyIndex = (int)(keyIndex * 12.0 / pcpsize + 0.5) % 12;
 
   if (keyIndex < 0) {
     throw EssentiaException("Key: keyIndex smaller than zero. Could not find key.");
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Here we calculate the outputs...
+
+  // first three outputs are key, scale and strength
   _key.get() = _keys[keyIndex];
   
   if (scale == MAJOR){
@@ -382,12 +462,17 @@ void Chords::compute() {
   
   _strength.get() = max;
 
+  // this one outputs the relative difference between the maximum and the
+  // second highest maximum (i.e. Compute second highest correlation peak)
   _firstToSecondRelativeStrength.get() = (max - max2) / max;
 
 }
 
+// this function resizes and interpolates the profiles to fit the
+// pcp size...
 void Chords::resize(int pcpsize) {
- 
+  ///////////////////////////////////////////////////////////////////
+  // Interpolate to get pcpsize values
   int n = pcpsize/12;
 
   _profile_doM.resize(pcpsize);
@@ -447,6 +532,10 @@ void Chords::resize(int pcpsize) {
   _std_profile_dim = sqrt(_std_profile_dim);
 }
 
+
+// correlation coefficient with 'shift'
+// on of the vectors is shifted in time, and then the correlation is calculated,
+// just like a cross-correlation
 Real Chords::correlation(const vector<Real>& v1, const Real mean1, const Real std1, const vector<Real>& v2, const Real mean2, const Real std2, const int shift) const
 {
   Real r = 0.0;
@@ -468,6 +557,15 @@ Real Chords::correlation(const vector<Real>& v1, const Real mean1, const Real st
   return r;
 }
 
+/**
+  Each note contribute to the different harmonics:
+  1.- first  harmonic  f   -> i
+  2.- second harmonic  2*f -> i
+  3.- third  harmonic  3*f -> i+7
+  4.- fourth harmonic  4*f -> i
+  ..
+  The contribution is weighted depending of the slope
+*/
 void Chords::addContributionHarmonics(const int pitchclass, const Real contribution, vector<Real>& M_chords) const
 {
   Real weight = contribution;
@@ -516,6 +614,7 @@ void Chords::addMajorTriad(const int root, const Real contribution, vector<Real>
 
 }
 
+
 void Chords::addMinorTriad(int root, Real contribution, vector<Real>& m_chords) const
 {
   // Root
@@ -534,6 +633,7 @@ void Chords::addMinorTriad(int root, Real contribution, vector<Real>& m_chords) 
   addContributionHarmonics(fifth, contribution, m_chords);
 }
 
+
 void Chords::addDimTriad(int root, Real contribution, vector<Real>& dim_chords) const
 {
   // Root
@@ -551,6 +651,7 @@ void Chords::addDimTriad(int root, Real contribution, vector<Real>& dim_chords) 
     fifth -= 12;
   addContributionHarmonics(fifth, contribution, dim_chords);
 }
+
 
 void Chords::addAugTriad(int root, Real contribution, vector<Real>& Aug_chords) const
 {
