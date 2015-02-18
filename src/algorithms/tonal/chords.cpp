@@ -167,8 +167,91 @@ void Chords::configure() {
   // addMinorThird(6, _dim[6], dim_chords);
   
   
-  
-  
+  /** MAJOR KEY */
+  // Tonic (I)
+  addMajorTriad(0, _M[0], M_chords);
+  //addMajorThird(0, _Aug[0], Aug_chords);												// added 
+
+  if (!parameter("useThreeChords").toBool())
+  {
+    // II
+    addMinorTriad(2, _M[2], M_chords);
+	//addMinorThird(2, _dim[2], dim_chords); 												// added
+    // Only root: AddContributionHarmonics(2, _M[2], M_chords);
+    // III
+    addMinorTriad(4, _M[4], M_chords);
+	//addMinorThird(4, _dim[4], dim_chords); 												// added
+    // Only root: AddContributionHarmonics(4, _M[4], M_chords);
+  }
+
+  // Subdominant (IV)
+  addMajorTriad(5, _M[5], M_chords);
+  //addMajorThird(5, _Aug[5], Aug_chords); 												// added
+  // Dominant (V)
+  addMajorTriad(7, _M[7], M_chords);
+  //addMajorThird(7, _Aug[7], Aug_chords); 												// added
+
+  if (!parameter("useThreeChords").toBool()) {
+    // VI
+    addMinorTriad(9, _M[9], M_chords);
+	//addMinorThird(9, _dim[9], dim_chords);
+    // Only root: AddContributionHarmonics(9, _M[9], M_chords);
+    // VII (5th diminished)
+    addContributionHarmonics(11, _M[11], M_chords);
+    addContributionHarmonics(2 , _M[11], M_chords);
+    addContributionHarmonics(5 , _M[11], M_chords);
+    addContributionHarmonics(11, _Aug[11], Aug_chords);									// added
+    addContributionHarmonics(2 , _Aug[11], Aug_chords);									// added
+    addContributionHarmonics(5 , _Aug[11], Aug_chords);									// added
+    // Only root: AddContributionHarmonics(11, _M[11], M_chords);
+  }
+
+  /** MINOR KEY */
+  // Tonica I
+  addMinorTriad(0, _m[0], m_chords);
+  //addMinorThird(0, _dim[0], dim_chords);											// added
+  if (!parameter("useThreeChords").toBool()){
+    // II (5th diminished)
+    addContributionHarmonics(2, _m[2], m_chords);
+    addContributionHarmonics(5, _m[2], m_chords);
+    addContributionHarmonics(8, _m[2], m_chords);
+    addContributionHarmonics(2, _dim[2], dim_chords);											// added
+    addContributionHarmonics(5, _dim[2], dim_chords);											// added
+    addContributionHarmonics(8, _dim[2], dim_chords);											// added
+    // Only root: AddContributionHarmonics(2, _m[2], m_chords);
+
+    // III (5th augmented)
+    addContributionHarmonics(3, _m[3], m_chords);
+    addContributionHarmonics(7, _m[3], m_chords);
+    addContributionHarmonics(11,_m[3], m_chords); // Harmonic minor scale 
+    addContributionHarmonics(3, _Aug[3], Aug_chords);											// added
+    addContributionHarmonics(7, _Aug[3], Aug_chords);											// added
+    addContributionHarmonics(11,_Aug[3], Aug_chords); 											// added
+    // Only root: AddContributionHarmonics(3, _m[3], m_chords);
+  }
+
+  // Subdominant (IV)
+  addMinorTriad(5, _m[5], m_chords);
+  //addMinorThird(5, _dim[5], dim_chords);											// added
+
+  // Dominant (V) (harmonic minor scale)
+  addMajorTriad(7, _m[7], m_chords);
+  //addMajorThird(7, _dim[7], dim_chords);											// added
+
+  if (!parameter("useThreeChords").toBool()) {
+    // VI
+    addMajorTriad(8, _m[8], m_chords);
+	//addMajorThird(8, _dim[8], dim_chords);											// added
+    // Only root: AddContributionHarmonics(8, _m[8], m_chords);
+    // VII (diminished 5th)
+    addContributionHarmonics(11, _m[8], m_chords);
+    addContributionHarmonics(2, _m[8], m_chords);
+    addContributionHarmonics(5, _m[8], m_chords);
+    addContributionHarmonics(11, _dim[8], dim_chords);											// added
+    addContributionHarmonics(2, _dim[8], dim_chords);											// added
+    addContributionHarmonics(5, _dim[8], dim_chords);											// added
+    // Only root: AddContributionHarmonics(11, _m[8], m_chords);
+  }
 
   if (parameter("usePolyphony").toBool()) {
     _M = M_chords;
@@ -258,20 +341,20 @@ void Chords::compute() {
       keyIndexMin = shift;
     }
 	
-    Real corrAugmented = correlation(pcp, mean_pcp, std_pcp, _profile_doM, _mean_profile_M, _std_profile_M, shift);
+    Real corrAugmented = correlation(pcp, mean_pcp, std_pcp, _profile_doAug, _mean_profile_Aug, _std_profile_Aug, shift);
     // Compute maximum value for major keys
     if (corrAugmented > maxAug) {
-      max2Maj = maxAug;
-      maxMaj = corrAugmented;
-      keyIndexMaj = shift;
+      max2Aug = maxAug;
+      maxAug = corrAugmented;
+      keyIndexAug = shift;
     }
 	
-    Real corrDisminished = correlation(pcp, mean_pcp, std_pcp, _profile_doM, _mean_profile_M, _std_profile_M, shift);
+    Real corrDisminished = correlation(pcp, mean_pcp, std_pcp, _profile_doDim, _mean_profile_dim, _std_profile_dim, shift);
     // Compute maximum value for major keys
     if (corrDisminished > maxDim) {
-      max2Maj = maxDim;
-      maxMaj = corrDisminished;
-      keyIndexMaj = shift;
+      max2Dim = maxDim;
+      maxDim = corrDisminished;
+      keyIndexDim = shift;
     }
 	
   }
@@ -292,36 +375,37 @@ void Chords::compute() {
 	  }
   }
   
-  cout << "maj " << maxArray[0] << " , min " << maxArray[1] << ", aug " << maxArray[2] << ", dim " << maxArray[3] << "   max " << max << ", maxIndex " << maxIndex << endl;
+/*
+   cout << "maj " << maxArray[0] << " , min " << maxArray[1] << ", aug " << maxArray[2] << ", dim " << maxArray[3] << "   max " << max << ", maxIndex " << maxIndex << endl;
   
-
+*/
   switch(maxIndex){
 	  case 0:
 		keyIndex = (int) (keyIndexMaj *  12 / pcpsize + .5);
 		scale = MAJOR;
 		max2 = max2Maj;
-	  	cout << "case 0" << endl;
+	  	//cout << "case 0" << endl;
 		break;
 	  case 1:
       	keyIndex = (int) (keyIndexMin * 12 / pcpsize + .5);
       	scale = MINOR;
       	max2 = max2Min;
-		cout << "case 1" << endl;
+		//cout << "case 1" << endl;
 		break;		
 	  case 2:
 		keyIndex = (int) (keyIndexAug *  12 / pcpsize + .5);
 		scale = AUGMENTED;
 		max2 = max2Aug;
-	  	cout << "case 2" << endl;
+	  	//cout << "case 2" << endl;
 		break;
 	  case 3:
 		keyIndex = (int) (keyIndexDim *  12 / pcpsize + .5);
 		scale = DISMINISHED;
 		max2 = max2Dim;
-		cout << "case 3" << endl;
+		//cout << "case 3" << endl;
 		break;
 	  default:
-	  	cout << "default" << endl;
+	  	//cout << "default" << endl;
 	  	break;
   }
   
