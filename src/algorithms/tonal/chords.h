@@ -31,7 +31,7 @@ class Chords : public Algorithm {
   Input<std::vector<Real> > _pcp;
 
   Output<std::string> _key;
-  Output<std::string> _scale;
+  Output<std::string> _chord;
   Output<Real> _strength;
   Output<Real> _firstToSecondRelativeStrength;
 
@@ -40,7 +40,7 @@ class Chords : public Algorithm {
   Chords() {
     declareInput(_pcp, "pcp", "the input pitch class profile");
     declareOutput(_key, "key", "the estimated key, from A to G");
-    declareOutput(_scale, "scale", "the scale of the key (major or minor)");
+    declareOutput(_chord, "chord", "the chord of the key (major or minor)");
     declareOutput(_strength, "strength", "the strength of the estimated key");
     declareOutput(_firstToSecondRelativeStrength, "firstToSecondRelativeStrength", "the relative strength difference between the best estimate and second best estimate of the key");
   }
@@ -61,7 +61,7 @@ class Chords : public Algorithm {
   static const char* description;
 
 protected:
-  enum Scales {
+  enum chords {
     MAJOR = 0,
     MINOR = 1,
 	AUGMENTED = 2,
@@ -98,8 +98,8 @@ protected:
   void addContributionHarmonics(const int pitchclass, const Real contribution, std::vector<Real>& M_chords) const;
   void addMajorTriad(const int root, const Real contribution, std::vector<Real>& M_chords) const;
   void addMinorTriad(int root, Real contribution, std::vector<Real>& M_chords) const;
-  void addMajorThird(const int root, const Real contribution, std::vector<Real>& Aug_chords) const;
-  void addMinorThird(int root, Real contribution, std::vector<Real>& dim_chords) const;
+  void addAugTriad(const int root, const Real contribution, std::vector<Real>& Aug_chords) const;
+  void addDimTriad(int root, Real contribution, std::vector<Real>& dim_chords) const;
   void resize(int size);
   
 };
@@ -118,7 +118,7 @@ class Chords : public AlgorithmComposite {
   Sink<std::vector<Real> > _pcp;
 
   Source<std::string> _key;
-  Source<std::string> _scale;
+  Source<std::string> _chord;
   Source<Real> _strength;
 
   Pool _pool;
