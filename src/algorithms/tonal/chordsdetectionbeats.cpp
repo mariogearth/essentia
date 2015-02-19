@@ -100,21 +100,21 @@ void ChordsDetectionBeats::compute() {
 
     _chordsAlgo->input("pcp").set(hpcpMedian);
     _chordsAlgo->output("key").set(key);
-    _chordsAlgo->output("chord").set(chord);
+    _chordsAlgo->output("scale").set(scale);
     _chordsAlgo->output("strength").set(str);
     _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
     _chordsAlgo->compute();
 
-	if (chord == "major"){
+	if (scale == "major"){
 		chords.push_back(key);
 	}
-    else if (chord == "minor") {
+    else if (scale == "minor") {
 		chords.push_back(key + 'm');
     }
-    else if (chord == "augmented") {
+    else if (scale == "augmented") {
         chords.push_back(key + "aug");
     }
-	else if (chord == "disminished"){
+	else if (scale == "disminished"){
 	    chords.push_back(key + "aug");	
 	}
 	else{}
@@ -179,7 +179,7 @@ AlgorithmStatus ChordsDetectionBeats::process() {
 
   const vector<vector<Real> >& hpcp = _pool.value<vector<vector<Real> > >("internal.hpcp");
   string key;
-  string chord;
+  string scale;
   Real strength;
   Real firstToSecondRelativeStrength;
 
@@ -200,12 +200,12 @@ AlgorithmStatus ChordsDetectionBeats::process() {
 
     _chordsAlgo->input("pcp").set(hpcpAverage);
     _chordsAlgo->output("key").set(key);
-    _chordsAlgo->output("chord").set(chord);
+    _chordsAlgo->output("scale").set(scale);
     _chordsAlgo->output("strength").set(strength);
     _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
     _chordsAlgo->compute();
 
-    if (chord == "minor") {
+    if (scale == "minor") {
       _chords.push(key + 'm');
     }
     else {
