@@ -28,7 +28,7 @@ namespace standard {
 const char* Chords::name = "Chords";
 const char* Chords::description = DOC("Using pitch profile classes, this algorithm calculates the best matching key estimate for a given HPCP. The algorithm was severely adapted and changed from the original implementation for readability and speed.\n"
 "\n"
-"Key will throw exceptions either when the input pcp size is not a positive multiple of 12 or if the key could not be found. Also if parameter \"scale\" is set to \"minor\" and the profile type is set to \"weichai\"\n"
+"Key will throw exceptions either when the input pcp size is not a positive multiple of 12 or if the key could not be found. Also if parameter \"chord\" is set to \"minor\" and the profile type is set to \"weichai\"\n"
 "\n"
 "References:\n"
 "  [1] E. Gómez, \"Tonal Description of Polyphonic Audio for Music Content\n"
@@ -126,7 +126,7 @@ void Chords::configure() {
   Assumptions:
     - We consider that the tonal hierarchy is kept when dealing with polyphonic sounds.
       That means that Krumhansl profiles are seen as the tonal hierarchy of
-      each of the chords of the harmonic scale within a major/minor tonal contest.
+      each of the chords of the harmonic chord within a major/minor tonal contest.
     - We compute from these chord profiles the corresponding note (pitch class) profiles,
       which will be compared to HPCP values.
 
@@ -225,7 +225,7 @@ void Chords::compute() {
   int keyIndex = -1; // index of the first maximum
   Real max = -1;     // first maximum
   Real max2 = -1;    // second maximum
-  int scale = MAJOR;  // scale
+  int chord = MAJOR;  // chord
 
   // Compute maximum for both major and minor
   Real maxMaj = -1;
@@ -313,25 +313,25 @@ void Chords::compute() {
   switch(maxIndex){
 	  case 0:
 		keyIndex = (int) (keyIndexMaj *  12 / pcpsize + .5);
-		scale = MAJOR;
+		chord = MAJOR;
 		max2 = max2Maj;
 	  	//cout << "case 0" << endl;
 		break;
 	  case 1:
       	keyIndex = (int) (keyIndexMin * 12 / pcpsize + .5);
-      	scale = MINOR;
+      	chord = MINOR;
       	max2 = max2Min;
 		//cout << "case 1" << endl;
 		break;		
 	  case 2:
 		keyIndex = (int) (keyIndexAug *  12 / pcpsize + .5);
-		scale = AUGMENTED;
+		chord = AUGMENTED;
 		max2 = max2Aug;
 	  	//cout << "case 2" << endl;
 		break;
 	  case 3:
 		keyIndex = (int) (keyIndexDim *  12 / pcpsize + .5);
-		scale = DISMINISHED;
+		chord = DISMINISHED;
 		max2 = max2Dim;
 		//cout << "case 3" << endl;
 		break;
@@ -341,8 +341,8 @@ void Chords::compute() {
   }
   
   if (_profileType == "weichai") {
-    if (scale == MINOR)
-      throw EssentiaException("Key: error in Wei Chai algorithm. Wei Chai algorithm does not support minor scales.");
+    if (chord == MINOR)
+      throw EssentiaException("Key: error in Wei Chai algorithm. Wei Chai algorithm does not support minor chords.");
 
     int fifth = keyIndex + 7*n;
     if (fifth > pcpsize)
@@ -354,7 +354,7 @@ void Chords::compute() {
     if (pcp[sixth] >  pcp[fifth]) {
       keyIndex = sixth;
       keyIndex = (int) (keyIndex * 12 / pcpsize + .5);
-      scale = MINOR;
+      chord = MINOR;
     }
   }
 
@@ -365,17 +365,17 @@ void Chords::compute() {
 
   _key.get() = _keys[keyIndex];
   
-  if (scale == MAJOR){
-	  _scale.get() = "major";
+  if (chord == MAJOR){
+	  _chord.get() = "major";
   }
-  else if(scale == MINOR){
-	  _scale.get() = "minor";
+  else if(chord == MINOR){
+	  _chord.get() = "minor";
   }
-  else if(scale == AUGMENTED){
-	  _scale.get() = "augmented";
+  else if(chord == AUGMENTED){
+	  _chord.get() = "augmented";
   }
-  else if(scale == DISMINISHED){
-	  _scale.get() = "disminished";  
+  else if(chord == DISMINISHED){
+	  _chord.get() = "disminished";  
   }
   else{}
   		  
@@ -590,7 +590,7 @@ Chords::Chords() : AlgorithmComposite() {
 
   declareInput(_poolStorage->input("data"), 1, "pcp", "the input pitch class profile");
   declareOutput(_key, 0, "key", "the estimated key, from A to G");
-  declareOutput(_scale, 0, "scale", "the scale of the key (major or minor)");
+  declareOutput(_chord, 0, "chord", "the chord of the key (major or minor)");
   declareOutput(_strength, 0, "strength", "the strength of the estimated key");
 }
 
@@ -606,19 +606,19 @@ AlgorithmStatus Chords::process() {
   const vector<vector<Real> >& hpcpKey = _pool.value<vector<vector<Real> > >("internal.hpcp");
   vector<Real> hpcpAverage = meanFrames(hpcpKey);
   string key;
-  string scale;
+  string chord;
   Real strength;
   Real firstToSecondRelativeStrength;
   _keyAlgo->configure("profileType", "temperley");
   _keyAlgo->input("pcp").set(hpcpAverage);
   _keyAlgo->output("key").set(key);
-  _keyAlgo->output("scale").set(scale);
+  _keyAlgo->output("chord").set(chord);
   _keyAlgo->output("strength").set(strength);
   _keyAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
   _keyAlgo->compute();
 
   _key.push(key);
-  _scale.push(scale);
+  _chord.push(chord);
   _strength.push(strength);
 
   return FINISHED;

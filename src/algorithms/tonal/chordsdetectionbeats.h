@@ -53,17 +53,14 @@ class ChordsDetectionBeats : public Algorithm {
     }
 
     void declareParameters() {
-      declareParameter("sampleRate", "the sampling rate of the audio signal [Hz]", "(0,inf)", 44100.);
-      declareParameter("windowSize", "the size of the window on which to estimate the chords [s]", "(0,inf)", 2.0);
-      declareParameter("hopSize", "the hop size with which the input PCPs were computed", "(0,inf)", 2048);
+		declareParameter("sampleRate", "the sampling rate of the audio signal [Hz]", "(0,inf)", 44100.);
+		declareParameter("hopSize", "the hop size with which the input PCPs were computed", "(0,inf)", 2048);
     }
 
     ~ChordsDetectionBeats() {
      delete _chordsAlgo;
    }
-
-    void configure();
-
+	void configure();
     void compute();
 
     static const char* name;
