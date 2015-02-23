@@ -41,16 +41,12 @@ const char* ChordsDetectionBeats::description = DOC("This algorithm takes the Ch
 "  key-finding algorithm reconsidered\", Music Perception vol. 17, no. 1,\n"
 "  pp. 65-100, 1999.");
 
+
 void ChordsDetectionBeats::configure() {
-  Real wsize = parameter("windowSize").toReal();
-  _sampleRate = parameter("sampleRate").toReal();
-  _hopSize = parameter("hopSize").toInt();
-
-  // NB: this assumes that frameSize = hopSize * 2, so that we don't have to
-  //     require frameSize as well as parameter.
-  _numFramesWindow = int((wsize * _sampleRate) / _hopSize) - 1; // wsize = 1.0 , hopSize = 512 --> 85
-}
-
+	_sampleRate = parameter("sampleRate").toReal();
+	_hopSize = parameter("hopSize").toInt();
+}	
+	
 void ChordsDetectionBeats::compute() {
   const vector<vector<Real> >& hpcp = _pcp.get();
   vector<string>& chords = _chords.get();
@@ -58,70 +54,67 @@ void ChordsDetectionBeats::compute() {
   const vector<Real>& ticks = _ticks.get(); 
   
   string key;
-  string scale;
+  string chord;
   Real firstToSecondRelativeStrength;
   Real str; // strength
 
-  chords.reserve(int(hpcp.size()/_numFramesWindow)); // 1478/85 = 17
-  //out << "chords.reserve(int(hpcp.size()/_numFramesWindow)); = " << int(hpcp.size()/_numFramesWindow) << endl;
-  strength.reserve(int(hpcp.size()/_numFramesWindow));
+  chords.reserve(ticks.size()-1); 
+  strength.reserve(ticks.size()-1);
 
-  //cout << "int(hpcp.size() = " << (int)hpcp.size() << endl; 
-
-  // for (int j=0; j<ticks.size(); j++) {
-  //   cout << "tick " << j << " " << ticks[j] << endl;
-  // } 
   if(ticks.size() < 2) { 
   throw EssentiaException("Ticks vector should contain at least 2 elements.");
   } 
 
-  Real diffTicks = ticks[1] - ticks[0];
-  int numFramesTick = int((diffTicks * _sampleRate) / _hopSize);
-  int initFrame = int((ticks[0] * _sampleRate) / _hopSize);
+  Real diffTicks = 0.0f;
+  int numFramesTick = 0;
+  int initFrame = 0;
 
-  int tickIndex=2;
-  int i=initFrame;
+  int frameStart=0;
+  int frameEnd=0;
   //cout << "ticks.size() = "<<ticks.size()<< "from 0 to "<< ticks.size()-1 << ", ticks[size-1]"<<ticks[ticks.size()-1]<< endl; 
   //cout << "hpcp.size() = length of chords output array in the previous version of the code = " <<hpcp.size()<< endl;
-  cout << "This is v.0.1" << endl;
-  while( i < int(hpcp.size()-1) && tickIndex < ticks.size() ) {
-    
-    //cout << "i = " << i << ", tickIndex = " << tickIndex << ", numFramesTick = " << numFramesTick << " , tickSize = " << ticks.size() << endl;;
 
-    int indexStart = initFrame;
-    int indexEnd = initFrame + numFramesTick-1;
+  cout << "This is v0.3" << endl;
+  
+  for (int i = 0; i < ticks.size()-1; ++i){
 
-    if (indexEnd > hpcp.size()-1) break;
-    
-    initFrame = indexEnd + 1;
-    
-    //cout << ", b4 calculate diffTicks, tickIndex = " << tickIndex <<endl;
-    Real diffTicks = ticks[tickIndex] - ticks[tickIndex-1];
+    diffTicks = ticks[i+1] - ticks[i];
+    numFramesTick = int((diffTicks * _sampleRate) / _hopSize);
+	numFramesTick = 1;
+    frameStart = int((ticks[i] * _sampleRate) / _hopSize);
+    frameEnd = frameStart + numFramesTick;
 
-    tickIndex += 1;
-    i += numFramesTick-2;
-    numFramesTick = int((diffTicks * _sampleRate) / _hopSize) - 1;
+    if (frameEnd > hpcp.size()-1) break;
 
-
-    vector<Real> hpcpMedian = medianFrames(hpcp, indexStart, indexEnd);
+    vector<Real> hpcpMedian = medianFrames(hpcp, frameStart, frameEnd);
     normalize(hpcpMedian);
 
     _chordsAlgo->input("pcp").set(hpcpMedian);
     _chordsAlgo->output("key").set(key);
-    _chordsAlgo->output("scale").set(scale);
+    _chordsAlgo->output("chord").set(chord);
     _chordsAlgo->output("strength").set(str);
     _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
     _chordsAlgo->compute();
 
-    if (scale == "minor") {
-      chords.push_back(key + 'm');
+	if (chord == "major"){
+		chords.push_back(key);
+	}
+    else if (chord == "minor") {
+		chords.push_back(key + 'm');
     }
-    else {
-      chords.push_back(key);
+    else if (chord == "augmented") {
+        chords.push_back(key + "aug");
     }
+	else if (chord == "disminished"){
+	    chords.push_back(key + "aug");	
+	}
+	else{}
 
     strength.push_back(str);
-  } // while
+
+  } // for
+
+  
 }//method
 
 } // namespace standard
@@ -142,7 +135,7 @@ ChordsDetectionBeats::ChordsDetectionBeats() : AlgorithmComposite() {
   declareOutput(_chords, 1, "chords", "the resulting chords, from A to G");
   declareOutput(_strength, 1, "strength", "the strength of the chord");
 
-  _chordsAlgo = standard::AlgorithmFactory::create("Key");
+  _chordsAlgo = standard::AlgorithmFactory::create("Chords");
   _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", false);
   _poolStorage = new PoolStorage<vector<Real> >(&_pool, "internal.hpcp");
 
@@ -177,7 +170,7 @@ AlgorithmStatus ChordsDetectionBeats::process() {
 
   const vector<vector<Real> >& hpcp = _pool.value<vector<vector<Real> > >("internal.hpcp");
   string key;
-  string scale;
+  string chord;
   Real strength;
   Real firstToSecondRelativeStrength;
 
@@ -198,12 +191,12 @@ AlgorithmStatus ChordsDetectionBeats::process() {
 
     _chordsAlgo->input("pcp").set(hpcpAverage);
     _chordsAlgo->output("key").set(key);
-    _chordsAlgo->output("scale").set(scale);
+    _chordsAlgo->output("chord").set(chord);
     _chordsAlgo->output("strength").set(strength);
     _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
     _chordsAlgo->compute();
 
-    if (scale == "minor") {
+    if (chord == "minor") {
       _chords.push(key + 'm');
     }
     else {
