@@ -33,7 +33,7 @@ class ChordsDetectionBeats : public Algorithm {
     Input<std::vector<std::vector<Real> > > _pcp;
     Input<std::vector<Real> > _ticks;
     Output<std::vector<std::string> > _chords;
-    Output<std::vector<Real> > _strength;
+    Output<std::vector<Real> > _time;
 
     Algorithm* _chordsAlgo;
     int _numFramesWindow;
@@ -49,7 +49,7 @@ class ChordsDetectionBeats : public Algorithm {
       declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
       declareInput(_ticks, "ticks", "the ticks where is located the beat of the song");
       declareOutput(_chords, "chords", "the resulting chords, from A to G");
-      declareOutput(_strength, "strength", "the strength of the chord");
+      declareOutput(_time, "strength", "the strength of the chord");
     }
 
     void declareParameters() {

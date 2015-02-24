@@ -50,7 +50,7 @@ void ChordsDetectionBeats::configure() {
 void ChordsDetectionBeats::compute() {
   const vector<vector<Real> >& hpcp = _pcp.get();
   vector<string>& chords = _chords.get();
-  vector<Real>& strength = _strength.get();
+  vector<Real>& time = _time.get();
   const vector<Real>& ticks = _ticks.get(); 
   
   string key;
@@ -59,7 +59,7 @@ void ChordsDetectionBeats::compute() {
   Real str; // strength
 
   chords.reserve(ticks.size()-1); 
-  strength.reserve(ticks.size()-1);
+  time.reserve(ticks.size()-1);
 
   if(ticks.size() < 2) { 
   throw EssentiaException("Ticks vector should contain at least 2 elements.");
@@ -76,13 +76,12 @@ void ChordsDetectionBeats::compute() {
 
   cout << "This is v0.3" << endl;
   
-  for (int i = 0; i < ticks.size()-1; ++i){
+  for (int i = 0; i < hpcp.size()-1; ++i){
 
     diffTicks = ticks[i+1] - ticks[i];
-    numFramesTick = int((diffTicks * _sampleRate) / _hopSize);
-	numFramesTick = 1;
+    //numFramesTick = int((diffTicks * _sampleRate) / _hopSize);
     frameStart = int((ticks[i] * _sampleRate) / _hopSize);
-    frameEnd = frameStart + numFramesTick;
+    frameEnd = frameStart + 1;
 
     if (frameEnd > hpcp.size()-1) break;
 
@@ -109,10 +108,12 @@ void ChordsDetectionBeats::compute() {
 	    chords.push_back(key + "dim");	
 	}
 	else{}
-
-    strength.push_back(str);
+	
+    time.push_back(ticks[i]);
 
   } // for
+  
+  cout << "size of time: " << time.size() << ", size of chords: " << chords.size() << endl;
 
   
 }//method
