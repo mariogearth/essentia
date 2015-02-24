@@ -105,7 +105,7 @@ void ChordsDetectionBeats::compute() {
         chords.push_back(key + "aug");
     }
 	else if (chord == "disminished"){
-	    chords.push_back(key + "aug");	
+	    chords.push_back(key + "dim");	
 	}
 	else{}
 
