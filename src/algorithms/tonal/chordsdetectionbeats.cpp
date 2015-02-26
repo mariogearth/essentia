@@ -46,9 +46,7 @@ void ChordsDetectionBeats::configure() {
   _sampleRate = parameter("sampleRate").toReal();
   _hopSize = parameter("hopSize").toInt();
 
-  // NB: this assumes that frameSize = hopSize * 2, so that we don't have to
-  //     require frameSize as well as parameter.
-  _numFramesWindow = int((wsize * _sampleRate) / _hopSize) - 1; // wsize = 1.0 , hopSize = 512 --> 85
+  _numFramesWindow = int((wsize * _sampleRate) / _hopSize) - 1; 
 }
 
 void ChordsDetectionBeats::compute() {
