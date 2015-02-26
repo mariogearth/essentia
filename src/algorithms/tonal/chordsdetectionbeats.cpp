@@ -41,11 +41,6 @@ const char* ChordsDetectionBeats::description = DOC("This algorithm estimates ch
 void ChordsDetectionBeats::configure() {
   _sampleRate = parameter("sampleRate").toReal();
   _hopSize = parameter("hopSize").toInt();
-<<<<<<< HEAD
-
-  _numFramesWindow = int((wsize * _sampleRate) / _hopSize) - 1; 
-=======
->>>>>>> 154728cb07fef5fa066a20a917fb90fab563df39
 }
 
 void ChordsDetectionBeats::compute() {
@@ -97,4 +92,3 @@ void ChordsDetectionBeats::compute() {
 }
 
 } // namespace standard
-} // namespace essentia
