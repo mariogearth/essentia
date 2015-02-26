@@ -18,6 +18,7 @@
  */
 
 #include "MusicExtractor.h"
+#include "tagwhitelist.h"
 using namespace std;
 using namespace essentia;
 using namespace streaming;
@@ -218,10 +219,14 @@ Pool MusicExtractor::computeAggregation(Pool& pool){
 void MusicExtractor::readMetadata(const string& audioFilename) {
   // Pool Connector in streaming mode currently does not support Pool sources,
   // therefore, using standard mode
+
+  vector<string> whitelist = arrayToVector<string>(tagWhitelist);
   standard::Algorithm* metadata = standard::AlgorithmFactory::create("MetadataReader",
                                                                      "filename", audioFilename,
                                                                      "failOnError", true,
-                                                                     "tagPoolName", "metadata.tags");
+                                                                     "tagPoolName", "metadata.tags",
+                                                                     "filterMetadata", true,
+                                                                     "filterMetadataTags", whitelist);
   string title, artist, album, comment, genre, tracknumber, date;
   int duration, sampleRate, bitrate, channels;
 
@@ -390,6 +395,7 @@ void MusicExtractor::outputToFile(Pool& pool, const string& outputFilename){
                                                                    "filename", outputFilename,
                                                                    "doubleCheck", true,
                                                                    "format", format,
+                                                                   "writeVersion", false,
                                                                    "indent", indent);
   output->input("pool").set(pool);
   output->compute();
@@ -509,7 +515,7 @@ void MusicExtractor::setExtractorDefaultOptions() {
     options.add("highlevel.svm_models", pathToSvmModels + svmModels[i] + ".history");
   }
 #else
-  //options.set("highlevel.compute", false);  
+  //options.set("highlevel.compute", false);
   //cerr << "Warning: Essentia was compiled without Gaia2 library, skipping SVM models" << endl;
 #endif
   options.set("highlevel.inputFormat", "json");
@@ -519,7 +525,7 @@ void MusicExtractor::setExtractorDefaultOptions() {
 }
 
 
-void MusicExtractor::mergeValues() {
+void MusicExtractor::mergeValues(Pool &pool) {
   // NOTE:
   // - no check for if descriptors with the same names as the ones asked to
   //   merge exist already
@@ -531,6 +537,6 @@ void MusicExtractor::mergeValues() {
 
   for (int i=0; i<(int) keys.size(); ++i) {
     keys[i].replace(0, mergeKeyPrefix.size()+1, "");
-    results.set(keys[i], options.value<string>(mergeKeyPrefix + "." + keys[i]));
+    pool.set(keys[i], options.value<string>(mergeKeyPrefix + "." + keys[i]));
   }
 }

@@ -26,12 +26,9 @@ namespace essentia {
 namespace standard {
 
 const char* ChordsDetectionBeats::name = "ChordsDetectionBeats";
-const char* ChordsDetectionBeats::description = DOC("This algorithm takes the ChordsDetection algorithm from Essentia, and tries to enhance it by using a Beat Tracker for in between estimation.\n"
+const char* ChordsDetectionBeats::description = DOC("This algorithm estimates chords using pitch profile classes similar to ChordsDetection algorithm given a list of beat positions. The chords are estimated on audio segments between each pair of consecutive beats.\n"
 "\n"
-"Note:\n"
-"  - This algorithm assumes that input pcps have been computed with framesize = 2*hopsize\n"
-"\n"
-"Quality: experimental (prone to errors, algorithm needs improvement)\n"
+"Quality: experimental (algorithm needs evaluation)\n"
 "\n"
 "References:\n"
 "  [1] E. Gómez, \"Tonal Description of Polyphonic Audio for Music Content\n"
@@ -42,11 +39,13 @@ const char* ChordsDetectionBeats::description = DOC("This algorithm takes the Ch
 "  pp. 65-100, 1999.");
 
 void ChordsDetectionBeats::configure() {
-  Real wsize = parameter("windowSize").toReal();
   _sampleRate = parameter("sampleRate").toReal();
   _hopSize = parameter("hopSize").toInt();
+<<<<<<< HEAD
 
   _numFramesWindow = int((wsize * _sampleRate) / _hopSize) - 1; 
+=======
+>>>>>>> 154728cb07fef5fa066a20a917fb90fab563df39
 }
 
 void ChordsDetectionBeats::compute() {
@@ -57,31 +56,24 @@ void ChordsDetectionBeats::compute() {
   
   string key;
   string scale;
+  Real keyStrength;
   Real firstToSecondRelativeStrength;
-  Real str; // strength
-
-  chords.reserve(int(hpcp.size()/_numFramesWindow)); 
-  strength.reserve(int(hpcp.size()/_numFramesWindow));
 
   if(ticks.size() < 2) { 
-  throw EssentiaException("Ticks vector should contain at least 2 elements.");
+    throw EssentiaException("Ticks vector should contain at least 2 elements.");
   } 
 
-  Real diffTicks = 0.0f;
-  int numFramesTick = 0;
-  int initFrame = 0;
+  chords.reserve(ticks.size() - 1); 
+  strength.reserve(ticks.size() - 1);
 
-  int frameStart=0;
-  int frameEnd=0;
+  for (int i=0; i < (int)ticks.size()-1; ++i) {
 
-  for (int i = 0; i < ticks.size()-1; ++i){
+    Real diffTicks = ticks[i+1] - ticks[i];
+    int numFramesTick = int((diffTicks * _sampleRate) / _hopSize);
+    int frameStart = int((ticks[i] * _sampleRate) / _hopSize);
+    int frameEnd = frameStart + numFramesTick-1;
 
-    diffTicks = ticks[i+1] - ticks[i];
-    numFramesTick = int((diffTicks * _sampleRate) / _hopSize);
-    frameStart = int((ticks[i] * _sampleRate) / _hopSize);
-    frameEnd = frameStart + numFramesTick-1;
-
-    if (frameEnd > hpcp.size()-1) break;
+    if (frameEnd > (int)hpcp.size()-1) break;
 
     vector<Real> hpcpMedian = medianFrames(hpcp, frameStart, frameEnd);
     normalize(hpcpMedian);
@@ -89,7 +81,7 @@ void ChordsDetectionBeats::compute() {
     _chordsAlgo->input("pcp").set(hpcpMedian);
     _chordsAlgo->output("key").set(key);
     _chordsAlgo->output("scale").set(scale);
-    _chordsAlgo->output("strength").set(str);
+    _chordsAlgo->output("strength").set(keyStrength);
     _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
     _chordsAlgo->compute();
 
@@ -100,109 +92,9 @@ void ChordsDetectionBeats::compute() {
       chords.push_back(key);
     }
 
-    strength.push_back(str);
-
-  } // for
-
-  
-}//method
+    strength.push_back(keyStrength);
+  } 
+}
 
 } // namespace standard
-} // namespace essentia
-
-
-#include "poolstorage.h"
-
-namespace essentia {
-namespace streaming {
-
-const char* ChordsDetectionBeats::name = standard::ChordsDetectionBeats::name;
-const char* ChordsDetectionBeats::description = standard::ChordsDetectionBeats::description;
-
-ChordsDetectionBeats::ChordsDetectionBeats() : AlgorithmComposite() {
-
-  declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
-  declareOutput(_chords, 1, "chords", "the resulting chords, from A to G");
-  declareOutput(_strength, 1, "strength", "the strength of the chord");
-
-  _chordsAlgo = standard::AlgorithmFactory::create("Key");
-  _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", false);
-  _poolStorage = new PoolStorage<vector<Real> >(&_pool, "internal.hpcp");
-
-  // FIXME: this is just a temporary hack...
-  //        the correct way to do this is to have the algorithm output the chords
-  //        continuously while processing, which requires a FrameCutter for vectors
-  // Need to set the buffer type to multiple frames as all the chords
-  // are output all at once
-  _chords.setBufferType(BufferUsage::forMultipleFrames);
-  _strength.setBufferType(BufferUsage::forMultipleFrames);
-
-  attach(_pcp, _poolStorage->input("data"));
-}
-
-ChordsDetectionBeats::~ChordsDetectionBeats() {
-  delete _chordsAlgo;
-  delete _poolStorage;
-}
-
-void ChordsDetectionBeats::configure() {
-  Real wsize = parameter("windowSize").toReal();
-  Real sampleRate = parameter("sampleRate").toReal();
-  int hopSize = parameter("hopSize").toInt();
-
-  // NB: this assumes that frameSize = hopSize * 2, so that we don't have to
-  //     require frameSize as well as parameter.
-  _numFramesWindow = int((wsize * sampleRate) / hopSize) - 1;
-}
-
-AlgorithmStatus ChordsDetectionBeats::process() {
-  if (!shouldStop()) return PASS;
-
-  const vector<vector<Real> >& hpcp = _pool.value<vector<vector<Real> > >("internal.hpcp");
-  string key;
-  string scale;
-  Real strength;
-  Real firstToSecondRelativeStrength;
-
-  // This is very strange, because we jump by a single frame each time, not by
-  // the defined windowSize. Is that the expected behavior or is it a bug?
-  // eaylon: windowSize is not intended for advancing, but for searching
-  // nwack: maybe it could be a smart idea to jump from 1 beat to another instead
-  //        of a fixed amount a time (arbitrary frame size)
-  
-  for (int i=0; i<(int)hpcp.size(); i++) {
-
-    int indexStart = max(0, i - _numFramesWindow/2);
-    int indexEnd = min(i + _numFramesWindow/2, (int)hpcp.size());
-
-    vector<Real> hpcpAverage = meanFrames(hpcp, indexStart, indexEnd);
-    normalize(hpcpAverage);
-
-    _chordsAlgo->input("pcp").set(hpcpAverage);
-    _chordsAlgo->output("key").set(key);
-    _chordsAlgo->output("scale").set(scale);
-    _chordsAlgo->output("strength").set(strength);
-    _chordsAlgo->output("firstToSecondRelativeStrength").set(firstToSecondRelativeStrength);
-    _chordsAlgo->compute();
-
-    if (scale == "minor") {
-      _chords.push(key + 'm');
-    }
-    else {
-      _chords.push(key);
-    }
-
-    _strength.push(strength);
-  }
-
-  return FINISHED;
-}
-
-void ChordsDetectionBeats::reset() {
-  AlgorithmComposite::reset();
-  _chordsAlgo->reset();
-}
-
-
-} // namespace streaming
 } // namespace essentia

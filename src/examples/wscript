@@ -9,7 +9,7 @@ import sys
 # the source file (less the .cpp extension) and is also used as the
 # binary name. The second element (if it exists) is a list of
 # additional files for the extractor
-example_sources = [
+example_sources_fileio = [
         ('standard_beatsmarker', ),
         ('standard_mfcc', ),
         ('standard_onsetrate', ),
@@ -42,12 +42,6 @@ example_sources = [
                    'extractor_music/MusicRhythmDescriptors',
                    'extractor_music/MusicTonalDescriptors' ]),
         
-        ('streaming_extractor_music_svm',
-                 [ 'extractor_music/MusicExtractor',
-                   'extractor_music/MusicLowlevelDescriptors',
-                   'extractor_music/MusicRhythmDescriptors',
-                   'extractor_music/MusicTonalDescriptors' ]),
-
         ('streaming_beatsmarker', ),
         ('streaming_mfcc', ),
         ('streaming_gfcc', ),
@@ -69,55 +63,54 @@ example_sources = [
                    'freesound/FreesoundSfxDescriptors' ])
 ]
 
+example_sources_with_gaia = [
+        ('streaming_extractor_music_svm',
+                 [ 'extractor_music/MusicExtractor',
+                   'extractor_music/MusicLowlevelDescriptors',
+                   'extractor_music/MusicRhythmDescriptors',
+                   'extractor_music/MusicTonalDescriptors' ])
+]
 
 def configure(ctx):
-    example_list = [p[0] for p in example_sources]
+    example_list_fileio = [p[0] for p in example_sources_fileio]
+    example_list_gaia = [p[0] for p in example_sources_with_gaia]
+
+    example_list = []
+
+    if "HAVE_AVCODEC" in ctx.env['define_key'] and "HAVE_SAMPLERATE" in ctx.env['define_key']:
+        example_list += example_list_fileio
+    
+        if "HAVE_GAIA2" in ctx.env['define_key']:
+            example_list += example_list_gaia
+  
+
     if ctx.env.WITH_EXAMPLES:
         ctx.env.EXAMPLE_LIST = example_list
+
     if ctx.env.EXAMPLES:
         for e in ctx.env.EXAMPLES.split(","):
             e = e.strip()
-            if e not in example_list:
+            if e not in example_list and e in example_list_gaia:
+                raise ctx.errors.ConfigurationError("Specified example [%s] cannot be included because Gaia2 is missing" % e)
+            if e not in example_list and e in example_list_fileio:
+                raise ctx.errors.ConfigurationError("Specified example [%s] cannot be included because LibAv/FFMpeg or libresample are missing" % e)
+            elif e not in example_list:
                 raise ctx.errors.ConfigurationError("Specified example [%s] does not exist" % e)
             ctx.env.EXAMPLE_LIST.append(e)
 
     if ctx.env.WITH_STATIC_EXAMPLES:
-        ctx.env.LINKFLAGS = ['-static']
-        ctx.env.SHLIB_MARKER = '-Wl,-Bstatic'
+        if sys.platform != 'darwin':
+            # skip -static flag on OSX, otherwise it will complain because 
+            # static linking to system libraries is not supported on OSX
+            ctx.env.LINKFLAGS = ['-static']
+            ctx.env.SHLIB_MARKER = '-Wl,-Bstatic'
 
-        # NOTE: this list of libs is hardcoded to work on a debian wheezy system
-        #       with a custom-compiled version of ffmpeg, to reduce the number of
-        #       dependencies and also remove the ones that only exist as dynamic
-        #       libs in wheezy
-        #
-        # To custom compile an adequate ffmpeg, do the following (on debian wheezy,
-        # should probably adapt a little for other systems)
-        #
-        # $ apt-get source libavcodec53
-        # $ sudo apt-get build-dep libavcodec53
-        # $ cd libav*
-        # $ vi debian/confflags
-        #     -> comment out the following lines
-        #     119: dirac_decoder (no static version of lib in wheezy)
-        #     122: gnutls
-        #     125: rtmp
-        #     126: opencv
-        #     129: schroedinger
-        #     132: va  (no static version of lib in wheezy)
-        #     133: vdpau (no static version of lib in wheezy)
-        #     143: X11 ext
-        # $ dpkg-buildpackage -us -uc
-        #
-        # install the built packages (they're 1 level up, ie: cd ..) and
-        # you should be good to go!
-
-        # NOTE: the order of the libs in the following list is VERY important,
-        #       do not mess with it unless you know what you're doing
-        #ctx.env.LIB = [ 'avformat', 'avcodec', 'avutil', 'xvidcore', 'x264',
-        #                'vorbis', 'vorbisenc', 'ogg', 'theora', 'speex',
-        #                'openjpeg', 'mp3lame', 'vpx', 'gsm', 'z', 'bz2' ]
         ctx.env.LIB = [ 'avformat', 'avcodec', 'avutil', 'tag' ]
         
+        if "HAVE_GAIA2" in ctx.env['define_key']:
+            ctx.env.LIB += [ 'gaia2' ]    
+            ctx.env['LIB_GAIA2'] += [ 'dl' ] # -ldl is required when building with static QtCore
+       
         if ctx.options.CROSS_COMPILE_MINGW32:
             # otherwise the __imp__ symbols will be expected at link time 
             ctx.env.CXXFLAGS += ['-DYAML_DECLARE_STATIC', '-DTAGLIB_STATIC']
@@ -125,7 +118,7 @@ def configure(ctx):
 
 def build(ctx):
     print('→ building from ' + ctx.path.abspath())
-
+    
     if len(ctx.env.EXAMPLE_LIST):
         def build_example(prog_name, other=None):
             files = ['%s.cpp' % f for f in [prog_name] + (other or [])]
@@ -142,7 +135,7 @@ def build(ctx):
                         use      = 'essentia ' + ctx.env.USES,
                         install_path = None)
 
-        for e in example_sources:
+        for e in example_sources_fileio + example_sources_with_gaia:
             if e[0] in ctx.env.EXAMPLE_LIST:
                 if len(e) == 1:
                     build_example(e[0])
