@@ -50,7 +50,7 @@ class HPCP : public Algorithm {
   void declareParameters() {
     declareParameter("size", "the size of the output HPCP (must be a positive nonzero multiple of 12)", "[12,inf)", 12);
     declareParameter("referenceFrequency", "the reference frequency for semitone index calculation, corresponding to A3 [Hz]", "(0,inf)", 440.0);
-    declareParameter("harmonics", "number of harmonics for frequency contribution, 0 indicates exclusive fundamental frequency contribution", "[0,inf)", 0); // 8 for chord estimation
+    declareParameter("harmonics", "number of harmonics for frequency contribution, 0 indicates exclusive fundamental frequency contribution", "[0,inf)", 4); // 8 for chord estimation
     declareParameter("bandPreset", "enables whether to use a band preset", "{true,false}", true);
     declareParameter("minFrequency", "the minimum frequency that contributes to the HPCP [Hz] (the difference between the min and split frequencies must not be less than 200.0 Hz)", "(0,inf)", 40.0);
     declareParameter("maxFrequency", "the maximum frequency that contributes to the HPCP [Hz] (the difference between the max and split frequencies must not be less than 200.0 Hz)", "(0,inf)", 5000.0);

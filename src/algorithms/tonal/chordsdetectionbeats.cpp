@@ -71,10 +71,11 @@ void ChordsDetectionBeats::compute() {
 
   int frameStart=0;
   int frameEnd=0;
+  int last_i=0;
   //cout << "ticks.size() = "<<ticks.size()<< "from 0 to "<< ticks.size()-1 << ", ticks[size-1]"<<ticks[ticks.size()-1]<< endl; 
   //cout << "hpcp.size() = length of chords output array in the previous version of the code = " <<hpcp.size()<< endl;
 
-  cout << "This is v0.3" << endl;
+  cout << "This is v0.1 (frame-based)" << endl;
   
   for (int i = 0; i < hpcp.size()-1; ++i){
 
@@ -84,6 +85,7 @@ void ChordsDetectionBeats::compute() {
     frameEnd = frameStart + 1;
 
     if (frameEnd > hpcp.size()-1) break;
+	last_i = i;
 
     vector<Real> hpcpMedian = medianFrames(hpcp, frameStart, frameEnd);
     normalize(hpcpMedian);
@@ -110,8 +112,11 @@ void ChordsDetectionBeats::compute() {
 	else{}
 	
     time.push_back(ticks[i]);
+	
 
   } // for
+  
+  time.push_back(ticks[last_i+1]);
   
   cout << "size of time: " << time.size() << ", size of chords: " << chords.size() << endl;
 

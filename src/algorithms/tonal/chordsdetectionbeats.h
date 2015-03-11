@@ -49,7 +49,7 @@ class ChordsDetectionBeats : public Algorithm {
       declareInput(_pcp, "pcp", "the pitch class profile from which to detect the chord");
       declareInput(_ticks, "ticks", "the ticks where is located the beat of the song");
       declareOutput(_chords, "chords", "the resulting chords, from A to G");
-      declareOutput(_time, "strength", "the strength of the chord");
+      declareOutput(_time, "time", "the timestamps of the chords");
     }
 
     void declareParameters() {
@@ -103,8 +103,7 @@ class ChordsDetectionBeats : public AlgorithmComposite {
 
   void declareParameters() {
     declareParameter("sampleRate", "the sampling rate of the audio signal [Hz]", "(0,inf)", 44100.);
-    declareParameter("windowSize", "the size of the window on which to estimate the chords [s]", "(0,inf)", 2.0);
-    declareParameter("hopSize", "the hop size with which the input PCPs were computed", "(0,inf)", 2048);
+    declareParameter("hopSize", "the hop size with which the input PCPs were computed", "(0,inf)", 1024);
   }
 
   void declareProcessOrder() {

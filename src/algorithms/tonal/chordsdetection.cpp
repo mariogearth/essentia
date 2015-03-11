@@ -110,7 +110,7 @@ ChordsDetection::ChordsDetection() : AlgorithmComposite() {
   declareOutput(_strength, 1, "strength", "the strength of the chord");
 
   _chordsAlgo = standard::AlgorithmFactory::create("Key");
-  _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", false);
+  _chordsAlgo->configure("profileType", "tonictriad", "usePolyphony", true);
   _poolStorage = new PoolStorage<vector<Real> >(&_pool, "internal.hpcp");
 
   // FIXME: this is just a temporary hack...

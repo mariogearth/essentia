@@ -46,12 +46,12 @@ class Chords : public Algorithm {
   }
 
   void declareParameters() {
-    declareParameter("usePolyphony", "enables the use of polyphonic profiles to define key profiles (this includes the contributions from triads as well as pitch harmonics)", "{true,false}", true);
-    declareParameter("useThreeChords", "consider only the 3 main triad chords of the key (T, D, SD) to build the polyphonic profiles", "{true,false}", false);
-    declareParameter("numHarmonics", "number of harmonics that should contribute to the polyphonic profile (1 only considers the fundamental harmonic)", "[1,inf)", 4);
+    declareParameter("usePolyphony", "enables the use of polyphonic profiles to define key profiles (this includes the contributions from triads as well as pitch harmonics)", "{true,false}", false);
+    //declareParameter("useThreeChords", "consider only the 3 main triad chords of the key (T, D, SD) to build the polyphonic profiles", "{true,false}", false);
+    declareParameter("numHarmonics", "number of harmonics that should contribute to the polyphonic profile (1 only considers the fundamental harmonic)", "[1,inf)", 5);
     declareParameter("slope", "value of the slope of the exponential harmonic contribution to the polyphonic profile", "[0,inf)", 0.6);
     declareParameter("profileType", "the type of polyphic profile to use for correlation calculation", "{diatonic,krumhansl,temperley,weichai,tonictriad,temperley2005,thpcp,shaath,gomez,noland}", "temperley");
-    declareParameter("pcpSize", "number of array elements used to represent a semitone times 12 (this parameter is only a hint, during computation, the size of the input PCP is used instead)", "[12,inf)", 36);
+    declareParameter("pcpSize", "number of array elements used to represent a semitone times 12 (this parameter is only a hint, during computation, the size of the input PCP is used instead)", "[12,inf)", 12);
   }
 
   void compute();
